@@ -1347,7 +1347,11 @@ function startVoice(instId, freq, dest){
 function startChordHold(rootPc, intervals){
   if(!actx){
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    actx = new Ctx();
+    try{
+      actx = new Ctx({ latencyHint: 'playback' });
+    }catch(e){
+      actx = new Ctx();
+    }
   }
   if(actx.state === 'suspended') actx.resume();
   const rootMidi = 60 + rootPc + (octaveOffset * 12);
