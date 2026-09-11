@@ -1225,6 +1225,10 @@ function midiToFreq(midi){
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
+function centsToRatio(cents){
+  return Math.pow(2, cents / 1200);
+}
+
 // each builder wires oscillators into `amp` and starts them; the shared ADSR envelope
 // (below) controls `amp`'s gain, so releasing simply ramps amp down and stops the oscillators.
 function buildPianoGraph(freq, now, amp){
@@ -1252,8 +1256,8 @@ function buildEPianoGraph(freq, now, amp){
 }
 
 function buildPadGraph(freq, now, amp){
-  const osc1 = actx.createOscillator(); osc1.type = 'sawtooth'; osc1.frequency.value = freq; osc1.detune.value = -6;
-  const osc2 = actx.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.value = freq; osc2.detune.value = 6;
+  const osc1 = actx.createOscillator(); osc1.type = 'sawtooth'; osc1.frequency.value = freq * centsToRatio(-6);
+  const osc2 = actx.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.value = freq * centsToRatio(6);
   const sub = actx.createOscillator(); sub.type = 'sine'; sub.frequency.value = freq / 2;
   const subG = actx.createGain(); subG.gain.value = 0.3;
   const filt = actx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 1800; filt.Q.value = 0.7;
