@@ -34,6 +34,13 @@
 
   a, button{ font-family: inherit; }
 
+  button, .chip, .key-btn, .tag-btn, .mode-btn, .inst-btn, .oct-btn{
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   .wrap{
     max-width: 760px;
     margin: 0 auto;
@@ -76,15 +83,16 @@
   .key-row{
     display:flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 18px;
   }
   .key-btn{
     background: var(--panel);
     border: 1px solid var(--line);
     color: var(--muted);
-    padding: 9px 4px;
+    padding: 14px 4px;
     width: 52px;
+    min-height: 44px;
     border-radius: 3px;
     cursor: pointer;
     font-size: 14px;
