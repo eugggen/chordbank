@@ -313,6 +313,42 @@
     background: rgba(230,161,60,0.09);
   }
 
+  .octave-control{
+    display:flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+    padding-left: 12px;
+    border-left: 1px solid var(--line-soft);
+  }
+  .octave-label{
+    color: var(--muted-2);
+    font-size: 11px;
+    margin-right: 2px;
+  }
+  .oct-btn{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    width: 22px;
+    height: 22px;
+    line-height: 20px;
+    border-radius: 3px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: center;
+    padding: 0;
+    transition: border-color .12s ease, color .12s ease, background .12s ease;
+  }
+  .oct-btn:hover:not(:disabled){ color: var(--ink); border-color: var(--muted-2); }
+  .oct-btn:disabled{ opacity: 0.35; cursor: default; }
+  .octave-value{
+    color: var(--teal);
+    font-size: 12px;
+    min-width: 30px;
+    text-align: center;
+  }
+
   .keyboard{
     max-width: 980px;
     margin: 0 auto;
@@ -1298,7 +1334,7 @@ function startVoice(instId, freq, dest){
 function startChordHold(rootPc, intervals){
   if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
   if(actx.state === 'suspended') actx.resume();
-  const rootMidi = 60 + rootPc;
+  const rootMidi = 60 + rootPc + (octaveOffset * 12);
   const master = actx.createGain();
   master.gain.value = 0.75 / Math.max(intervals.length, 1);
   master.connect(getLimiterBus());
@@ -1332,6 +1368,50 @@ INSTRUMENTS.forEach(inst => {
   });
   instrumentRow.appendChild(b);
 });
+
+// octave shifter — clamps to -2..+2 octaves, applied to whichever instrument is selected
+let octaveOffset = 0;
+const OCTAVE_MIN = -2;
+const OCTAVE_MAX = 2;
+
+const octaveControl = document.createElement('div');
+octaveControl.className = 'octave-control';
+
+const octaveLabel = document.createElement('span');
+octaveLabel.className = 'octave-label';
+octaveLabel.textContent = 'octave';
+
+const octDownBtn = document.createElement('button');
+octDownBtn.className = 'oct-btn';
+octDownBtn.textContent = '\u2212';
+
+const octValue = document.createElement('span');
+octValue.className = 'octave-value';
+
+const octUpBtn = document.createElement('button');
+octUpBtn.className = 'oct-btn';
+octUpBtn.textContent = '+';
+
+function updateOctaveDisplay(){
+  octValue.textContent = octaveOffset > 0 ? ('+' + octaveOffset) : String(octaveOffset);
+  octDownBtn.disabled = octaveOffset <= OCTAVE_MIN;
+  octUpBtn.disabled = octaveOffset >= OCTAVE_MAX;
+}
+octDownBtn.addEventListener('click', () => {
+  octaveOffset = Math.max(OCTAVE_MIN, octaveOffset - 1);
+  updateOctaveDisplay();
+});
+octUpBtn.addEventListener('click', () => {
+  octaveOffset = Math.min(OCTAVE_MAX, octaveOffset + 1);
+  updateOctaveDisplay();
+});
+updateOctaveDisplay();
+
+octaveControl.appendChild(octaveLabel);
+octaveControl.appendChild(octDownBtn);
+octaveControl.appendChild(octValue);
+octaveControl.appendChild(octUpBtn);
+instrumentRow.appendChild(octaveControl);
 
 // ---------- readout ----------
 const rdName = document.getElementById('rdName');
