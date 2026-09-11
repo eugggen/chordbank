@@ -28,7 +28,7 @@
     color: var(--ink);
     font-family: 'IBM Plex Mono', monospace;
     -webkit-font-smoothing: antialiased;
-    padding-bottom: 190px;
+    padding-bottom: 228px;
   }
   ::selection{ background: var(--amber-dim); color: var(--ink); }
 
@@ -123,6 +123,28 @@
     color: var(--teal);
     border-color: var(--teal-dim);
     background: rgba(85,168,156,0.08);
+  }
+
+  .mode-switch{
+    display:flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .mode-btn{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 6px 16px;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color .12s ease, color .12s ease, background .12s ease;
+  }
+  .mode-btn:hover{ color: var(--ink); border-color: var(--muted-2); }
+  .mode-btn.active{
+    background: var(--amber-dim);
+    border-color: var(--amber);
+    color: var(--amber);
   }
 
   /* progression grid */
@@ -257,6 +279,36 @@
     font-size: 12px;
   }
 
+  .instrument-row{
+    max-width: 980px;
+    margin: 0 auto 10px;
+    display:flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .instrument-label{
+    color: var(--muted-2);
+    font-size: 11px;
+    margin-right: 2px;
+  }
+  .inst-btn{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 4px 11px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: border-color .12s ease, color .12s ease, background .12s ease;
+  }
+  .inst-btn:hover{ color: var(--ink); border-color: var(--muted-2); }
+  .inst-btn.active{
+    color: var(--amber);
+    border-color: var(--amber-dim);
+    background: rgba(230,161,60,0.09);
+  }
+
   .keyboard{
     max-width: 980px;
     margin: 0 auto;
@@ -343,6 +395,7 @@
   </header>
 
   <div class="key-row" id="keyRow"></div>
+  <div class="mode-switch" id="modeSwitch"></div>
   <div class="tag-row" id="tagRow"></div>
 
   <div class="grid" id="grid"></div>
@@ -351,6 +404,9 @@
 </div>
 
 <div class="keyboard-panel">
+  <div class="instrument-row" id="instrumentRow">
+    <span class="instrument-label">preview instrument</span>
+  </div>
   <div class="kb-readout">
     <span class="name" id="rdName"></span>
     <span class="notes" id="rdNotes"></span>
@@ -384,7 +440,7 @@ const QUALITIES = {
 
 const PROGRESSIONS = [
   {
-    name: "4AM Vamp", tags: ["House","Modal"], accent: 'var(--teal-dim)',
+    name: "4AM Vamp", tags: ["House","Modal"], mood: 'Dreamy', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i9', offset:0, q:'min9' },
       { roman:'ii9', offset:2, q:'min9' },
@@ -392,7 +448,7 @@ const PROGRESSIONS = [
     desc: "The two-chord dorian pump under half of deep house — root and second degree trading places, both minor ninths. Loop it for eight bars and let the low end breathe."
   },
   {
-    name: "Warehouse Lights", tags: ["Techno","Trance"], accent: 'var(--amber-dim)',
+    name: "Warehouse Lights", tags: ["Techno","Trance"], mood: 'Uplifting', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'♭VI', offset:8, q:'maj' },
@@ -402,7 +458,7 @@ const PROGRESSIONS = [
     desc: "Natural minor, four chords, endless breakdowns. Stack a saw pad on top and it more or less writes its own arpeggio."
   },
   {
-    name: "Mirror Ball", tags: ["Disco","Funk"], accent: 'var(--amber-dim)',
+    name: "Mirror Ball", tags: ["Disco","Funk"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'vi7', offset:9, q:'min7' },
@@ -412,7 +468,7 @@ const PROGRESSIONS = [
     desc: "The disco engine room — a I–vi–ii–V loop dressed in sevenths. Add a wah guitar and four-on-the-floor and you're basically at Studio 54."
   },
   {
-    name: "Last Call", tags: ["Jazz","Standard"], accent: 'var(--teal-dim)',
+    name: "Last Call", tags: ["Jazz","Standard"], mood: 'Melancholic', accent: 'var(--teal-dim)',
     chords: [
       { roman:'ii7', offset:2, q:'min7' },
       { roman:'V7', offset:7, q:'dom7' },
@@ -422,7 +478,7 @@ const PROGRESSIONS = [
     desc: "The turnaround every standard eventually confesses to. That VI7 is borrowed — a secondary dominant pulling straight back to ii for another lap."
   },
   {
-    name: "Kind of Blue-ish", tags: ["Modal Jazz"], accent: 'var(--teal-dim)',
+    name: "Kind of Blue-ish", tags: ["Modal Jazz"], mood: 'Mysterious', accent: 'var(--teal-dim)',
     chords: [
       { roman:'ii\u00F87', offset:2, q:'m7b5' },
       { roman:'V7alt', offset:7, q:'dom7' },
@@ -431,7 +487,7 @@ const PROGRESSIONS = [
     desc: "A minor ii–V–i, the backbone of half the Real Book. The half-diminished ii is the whole flavor — resolve it slow."
   },
   {
-    name: "Glasshouse", tags: ["Ambient","Ethereal"], accent: 'var(--teal-dim)',
+    name: "Glasshouse", tags: ["Ambient","Ethereal"], mood: 'Dreamy', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj9', offset:0, q:'maj9' },
       { roman:'iii7', offset:4, q:'min7' },
@@ -441,7 +497,7 @@ const PROGRESSIONS = [
     desc: "Four extended chords that barely move — built for pads, not drums. Let each one ring a full bar and add reverb until it disappears."
   },
   {
-    name: "Corner Booth", tags: ["Neo-Soul"], accent: 'var(--amber-dim)',
+    name: "Corner Booth", tags: ["Neo-Soul"], mood: 'Warm', accent: 'var(--amber-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'iii7', offset:4, q:'min7' },
@@ -452,7 +508,7 @@ const PROGRESSIONS = [
     desc: "Five chords, all sevenths and up — the neo-soul descent from tonic to a suspended dominant that never quite resolves the way you expect."
   },
   {
-    name: "Cold Open", tags: ["Cinematic","Minor"], accent: 'var(--teal-dim)',
+    name: "Cold Open", tags: ["Cinematic","Minor"], mood: 'Tense', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'♭VII', offset:10, q:'maj' },
@@ -462,7 +518,7 @@ const PROGRESSIONS = [
     desc: "The Andalusian cadence, electronic-scored — the descending bass line that soundtracks every tense elevator ride in a thriller."
   },
   {
-    name: "Borrowed Light", tags: ["Cinematic","Major"], accent: 'var(--amber-dim)',
+    name: "Borrowed Light", tags: ["Cinematic","Major"], mood: 'Melancholic', accent: 'var(--amber-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'♭III', offset:3, q:'maj' },
@@ -472,7 +528,7 @@ const PROGRESSIONS = [
     desc: "Major key with two chords borrowed from the parallel minor. That last iv is the whole trick — it turns a bright verse bittersweet in one move."
   },
   {
-    name: "Slow Bloom", tags: ["Lo-fi","Downtempo"], accent: 'var(--teal-dim)',
+    name: "Slow Bloom", tags: ["Lo-fi","Downtempo"], mood: 'Dreamy', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i9', offset:0, q:'min9' },
       { roman:'v7', offset:7, q:'min7' },
@@ -482,7 +538,7 @@ const PROGRESSIONS = [
     desc: "Dusty minor ninth into a lydian-tinged IV — the chord that makes lo-fi beat tapes feel like they're thinking about something."
   },
   {
-    name: "Chain Reaction", tags: ["Jazz","Turnaround"], accent: 'var(--amber-dim)',
+    name: "Chain Reaction", tags: ["Jazz","Turnaround"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'V7/vi', offset:4, q:'dom7' },
@@ -493,7 +549,7 @@ const PROGRESSIONS = [
     desc: "A chain of secondary dominants — every chord is somebody else's V7 in disguise. A ragtime-into-jazz trick that still sounds slick over a house break."
   },
   {
-    name: "Garage Skank", tags: ["UK Garage","2-Step"], accent: 'var(--teal-dim)',
+    name: "Garage Skank", tags: ["UK Garage","2-Step"], mood: 'Uplifting', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj9', offset:0, q:'maj9' },
       { roman:'IVmaj9', offset:5, q:'maj9' },
@@ -503,7 +559,7 @@ const PROGRESSIONS = [
     desc: "The 2-step chord stack — maj9s a fourth apart with a soulful iii–vi detour. Chop it into offbeat stabs and it's instant garage skank."
   },
   {
-    name: "Sub Bass Church", tags: ["Gospel","Neo-Soul"], accent: 'var(--amber-dim)',
+    name: "Sub Bass Church", tags: ["Gospel","Neo-Soul"], mood: 'Warm', accent: 'var(--amber-dim)',
     chords: [
       { roman:'ii9', offset:2, q:'min9' },
       { roman:'V7sus', offset:7, q:'dom7sus' },
@@ -513,7 +569,7 @@ const PROGRESSIONS = [
     desc: "A gospel ii–V that refuses to resolve on the first pass — the sus4 hangs a beat before falling into the dominant. Run it under a Rhodes and a choir pad."
   },
   {
-    name: "Bossa Nightfall", tags: ["Bossa","Jazz"], accent: 'var(--teal-dim)',
+    name: "Bossa Nightfall", tags: ["Bossa","Jazz"], mood: 'Dreamy', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'♭iii°7', offset:3, q:'dim7' },
@@ -523,7 +579,7 @@ const PROGRESSIONS = [
     desc: "A chromatic passing diminished slides the maj7 down into the ii — a bossa nova staple borrowed wholesale by jazz. Play it slow with nylon strings or a soft pluck synth."
   },
   {
-    name: "Drum & Bass Tension", tags: ["Drum & Bass","Jungle"], accent: 'var(--teal-dim)',
+    name: "Drum & Bass Tension", tags: ["Drum & Bass","Jungle"], mood: 'Tense', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i9', offset:0, q:'min9' },
       { roman:'♭VImaj7', offset:8, q:'maj7' },
@@ -533,7 +589,7 @@ const PROGRESSIONS = [
     desc: "Dark, rolling, and built for a busy amen break — minor ninths either side of a major-seventh detour that never really lets the tension go."
   },
   {
-    name: "Minimal Static", tags: ["Minimal","Tech House"], accent: 'var(--teal-dim)',
+    name: "Minimal Static", tags: ["Minimal","Tech House"], mood: 'Mysterious', accent: 'var(--teal-dim)',
     chords: [
       { roman:'I(add9)', offset:0, q:'add9' },
       { roman:'IV(add9)', offset:5, q:'add9' },
@@ -541,7 +597,7 @@ const PROGRESSIONS = [
     desc: "Two add9 chords a fourth apart, barely a progression at all — which is the point. Minimal and deep tech run on exactly this much harmonic information."
   },
   {
-    name: "Synthwave Drive", tags: ["Synthwave","Retro"], accent: 'var(--amber-dim)',
+    name: "Synthwave Drive", tags: ["Synthwave","Retro"], mood: 'Uplifting', accent: 'var(--amber-dim)',
     chords: [
       { roman:'vi7', offset:9, q:'min7' },
       { roman:'IVmaj7', offset:5, q:'maj7' },
@@ -551,7 +607,7 @@ const PROGRESSIONS = [
     desc: "The vi–IV–I–V loop everyone knows, dressed up in sevenths and a suspended dominant for that neon-lit, driving-at-night feel."
   },
   {
-    name: "Breakbeat Chase", tags: ["Breakbeat","Big Beat"], accent: 'var(--amber-dim)',
+    name: "Breakbeat Chase", tags: ["Breakbeat","Big Beat"], mood: 'Tense', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'III', offset:3, q:'maj' },
@@ -561,7 +617,7 @@ const PROGRESSIONS = [
     desc: "Natural minor rearranged for momentum — the relative major (III) up front keeps it bright before the iv drags it back down for the drop."
   },
   {
-    name: "Afterparty 6ths", tags: ["Disco","Motown"], accent: 'var(--amber-dim)',
+    name: "Afterparty 6ths", tags: ["Disco","Motown"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'I6', offset:0, q:'maj6' },
       { roman:'vi6', offset:9, q:'min6' },
@@ -571,7 +627,7 @@ const PROGRESSIONS = [
     desc: "Sixth chords instead of sevenths — the Motown-into-disco move that keeps things sweet rather than jazzy. Perfect for a rhythm guitar skank or a warm string stab."
   },
   {
-    name: "Tritone Turnback", tags: ["Jazz","Reharm"], accent: 'var(--teal-dim)',
+    name: "Tritone Turnback", tags: ["Jazz","Reharm"], mood: 'Mysterious', accent: 'var(--teal-dim)',
     chords: [
       { roman:'ii7', offset:2, q:'min7' },
       { roman:'♭II7', offset:1, q:'dom7' },
@@ -580,7 +636,7 @@ const PROGRESSIONS = [
     desc: "Swap the V7 for its tritone substitute and the bassline walks down in half steps instead of leaping a fourth — one of jazz's oldest reharmonization tricks."
   },
   {
-    name: "Afrobeat Pulse", tags: ["Afrobeat","Funk"], accent: 'var(--amber-dim)',
+    name: "Afrobeat Pulse", tags: ["Afrobeat","Funk"], mood: 'Uplifting', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i9', offset:0, q:'min9' },
       { roman:'IV9', offset:5, q:'dom9' },
@@ -588,7 +644,7 @@ const PROGRESSIONS = [
     desc: "The Fela move — a two-chord dominant-ninth vamp built for horns and interlocking guitars. Nothing resolves; everything just grooves."
   },
   {
-    name: "Dembow Drift", tags: ["Reggaeton","Latin"], accent: 'var(--amber-dim)',
+    name: "Dembow Drift", tags: ["Reggaeton","Latin"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'♭VI', offset:8, q:'maj' },
@@ -597,7 +653,7 @@ const PROGRESSIONS = [
     desc: "i–♭VI–♭VII, the reggaeton loop that carries a thousand choruses. Change nothing else and the dembow rhythm does the rest."
   },
   {
-    name: "Cloud Trap", tags: ["Trap","Cloud"], accent: 'var(--teal-dim)',
+    name: "Cloud Trap", tags: ["Trap","Cloud"], mood: 'Dark', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i7', offset:0, q:'min7' },
       { roman:'iv7', offset:5, q:'min7' },
@@ -607,7 +663,7 @@ const PROGRESSIONS = [
     desc: "Two minor sevenths sliding into two majors — dark and spacious enough for an 808 to fill in the low end. The major chords keep it from tipping into pure dread."
   },
   {
-    name: "Italo Nights", tags: ["Italo Disco","Synth"], accent: 'var(--amber-dim)',
+    name: "Italo Nights", tags: ["Italo Disco","Synth"], mood: 'Dark', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'iv', offset:5, q:'min' },
@@ -616,7 +672,7 @@ const PROGRESSIONS = [
     desc: "A tight three-chord minor loop with a driving iv — the arpeggiated backbone of half the Italo disco records ever pressed to vinyl."
   },
   {
-    name: "Boards of Canada Haze", tags: ["IDM","Downtempo"], accent: 'var(--teal-dim)',
+    name: "Boards of Canada Haze", tags: ["IDM","Downtempo"], mood: 'Dreamy', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj9', offset:0, q:'maj9' },
       { roman:'IV(add9)', offset:5, q:'add9' },
@@ -625,7 +681,7 @@ const PROGRESSIONS = [
     desc: "Extended, slightly mismatched chords — maj9, add9, min9 — built to sound like a memory rather than a chord change. Detune it a few cents and don't fix it."
   },
   {
-    name: "Shoegaze Wash", tags: ["Shoegaze","Dreampop"], accent: 'var(--teal-dim)',
+    name: "Shoegaze Wash", tags: ["Shoegaze","Dreampop"], mood: 'Dreamy', accent: 'var(--teal-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'vi', offset:9, q:'min' },
@@ -635,7 +691,7 @@ const PROGRESSIONS = [
     desc: "A slow descent from I through vi and IV to iii — the loop that lets a wall of reverb-drenched guitars feel like it's floating rather than moving."
   },
   {
-    name: "Balearic Sunset", tags: ["Balearic","Chillout"], accent: 'var(--amber-dim)',
+    name: "Balearic Sunset", tags: ["Balearic","Chillout"], mood: 'Warm', accent: 'var(--amber-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'IVmaj7', offset:5, q:'maj7' },
@@ -645,7 +701,7 @@ const PROGRESSIONS = [
     desc: "Two maj7s and two minor extensions, built for a slow fade at golden hour. Warm pads, a soft pluck lead, and not much else needed."
   },
   {
-    name: "P-Funk Strut", tags: ["Funk","P-Funk"], accent: 'var(--amber-dim)',
+    name: "P-Funk Strut", tags: ["Funk","P-Funk"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'I9', offset:0, q:'dom9' },
       { roman:'IV9', offset:5, q:'dom9' },
@@ -653,7 +709,7 @@ const PROGRESSIONS = [
     desc: "One dominant ninth answered by another a fourth up — the vamp under a thousand horn-section funk breakdowns. Groove first, harmony second."
   },
   {
-    name: "Slow Jam", tags: ["R&B","Slow Jam"], accent: 'var(--teal-dim)',
+    name: "Slow Jam", tags: ["R&B","Slow Jam"], mood: 'Warm', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'I7', offset:0, q:'dom7' },
@@ -663,7 +719,7 @@ const PROGRESSIONS = [
     desc: "The quiet-storm walk-up — I turns into its own dominant, resolves to IV, then a borrowed diminished chord pulls it chromatically back home. Classic '80s R&B sleight of hand."
   },
   {
-    name: "Big Room Build", tags: ["EDM","Progressive House"], accent: 'var(--amber-dim)',
+    name: "Big Room Build", tags: ["EDM","Progressive House"], mood: 'Uplifting', accent: 'var(--amber-dim)',
     chords: [
       { roman:'vi', offset:9, q:'min' },
       { roman:'IV', offset:5, q:'maj' },
@@ -673,7 +729,7 @@ const PROGRESSIONS = [
     desc: "Four plain triads, the most-played progression in festival house. No sevenths, no tension — just the chord shapes a hands-in-the-air drop is built on."
   },
   {
-    name: "Chicago Warehouse", tags: ["House","Chicago House"], accent: 'var(--teal-dim)',
+    name: "Chicago Warehouse", tags: ["House","Chicago House"], mood: 'Uplifting', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i7', offset:0, q:'min7' },
       { roman:'iv7', offset:5, q:'min7' },
@@ -681,7 +737,7 @@ const PROGRESSIONS = [
     desc: "The original house pump — two minor sevenths, one chord climbing a fourth and back. Old Roland pads and a 909 are all it's ever needed."
   },
   {
-    name: "Detroit Strings", tags: ["Techno","Detroit Techno"], accent: 'var(--teal-dim)',
+    name: "Detroit Strings", tags: ["Techno","Detroit Techno"], mood: 'Melancholic', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i9', offset:0, q:'min9' },
       { roman:'♭VImaj7', offset:8, q:'maj7' },
@@ -691,7 +747,7 @@ const PROGRESSIONS = [
     desc: "A descending string-pad loop built for Belleville-style melancholy — minor ninth into a flat-six major seventh into a dominant that never quite lands where you expect."
   },
   {
-    name: "Grime Stab", tags: ["Grime","UK"], accent: 'var(--amber-dim)',
+    name: "Grime Stab", tags: ["Grime","UK"], mood: 'Tense', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'♭II', offset:1, q:'maj' },
@@ -699,7 +755,7 @@ const PROGRESSIONS = [
     desc: "A half-step stab straight out of the Phrygian mode — the dissonant, off-kilter two-chord jab under a hundred grime instrumentals."
   },
   {
-    name: "Dubstep Wobble", tags: ["Dubstep","Bass"], accent: 'var(--teal-dim)',
+    name: "Dubstep Wobble", tags: ["Dubstep","Bass"], mood: 'Dark', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i7', offset:0, q:'min7' },
       { roman:'♭VI7', offset:8, q:'dom7' },
@@ -707,7 +763,7 @@ const PROGRESSIONS = [
     desc: "A minor seventh answered by a dominant a third above — dark enough to carry a sub-bass wobble and still leave room for the snare."
   },
   {
-    name: "Amapiano Glow", tags: ["Amapiano","Afro House"], accent: 'var(--amber-dim)',
+    name: "Amapiano Glow", tags: ["Amapiano","Afro House"], mood: 'Warm', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i9', offset:0, q:'min9' },
       { roman:'iv9', offset:5, q:'min9' },
@@ -716,7 +772,7 @@ const PROGRESSIONS = [
     desc: "Three minor-ninth-family chords built for log drums and a lot of space — let each one breathe for two bars before the next log drum roll."
   },
   {
-    name: "Highlife Skip", tags: ["Highlife","Afrobeat"], accent: 'var(--teal-dim)',
+    name: "Highlife Skip", tags: ["Highlife","Afrobeat"], mood: 'Uplifting', accent: 'var(--teal-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'IV', offset:5, q:'maj' },
@@ -725,7 +781,7 @@ const PROGRESSIONS = [
     desc: "Bright major triads in a classic I–IV–V shuffle — the guitar-forward backbone of West African highlife, built for interlocking picked lines."
   },
   {
-    name: "Bolero Nights", tags: ["Bolero","Latin"], accent: 'var(--amber-dim)',
+    name: "Bolero Nights", tags: ["Bolero","Latin"], mood: 'Melancholic', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'iv6', offset:5, q:'min6' },
@@ -734,7 +790,7 @@ const PROGRESSIONS = [
     desc: "A minor bolero cadence — the minor-sixth chord is the signature move, a little more wistful than a straight iv on its way to the dominant."
   },
   {
-    name: "Flamenco Fire", tags: ["Flamenco","Latin Jazz"], accent: 'var(--teal-dim)',
+    name: "Flamenco Fire", tags: ["Flamenco","Latin Jazz"], mood: 'Tense', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'♭VII', offset:10, q:'maj' },
@@ -744,7 +800,7 @@ const PROGRESSIONS = [
     desc: "The Andalusian descent pushed one step further — a full dominant seventh on the final chord gives it real bite before it resolves."
   },
   {
-    name: "Gypsy Swing", tags: ["Gypsy Jazz","Klezmer"], accent: 'var(--amber-dim)',
+    name: "Gypsy Swing", tags: ["Gypsy Jazz","Klezmer"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i6', offset:0, q:'min6' },
       { roman:'iv6', offset:5, q:'min6' },
@@ -753,7 +809,7 @@ const PROGRESSIONS = [
     desc: "A minor-sixth vamp either side of a dominant seventh — the Django Reinhardt cadence, built for fast alternate-bass rhythm guitar."
   },
   {
-    name: "Fusion Odd Meter", tags: ["Fusion","Jazz"], accent: 'var(--teal-dim)',
+    name: "Fusion Odd Meter", tags: ["Fusion","Jazz"], mood: 'Mysterious', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj7♯11', offset:0, q:'maj7s11' },
       { roman:'ii7', offset:2, q:'min7' },
@@ -762,7 +818,7 @@ const PROGRESSIONS = [
     desc: "A lydian-tinged maj7(♯11) bookending a quick ii–V — fusion's favorite way of sounding both floaty and functional in the same four bars."
   },
   {
-    name: "Prog Ascend", tags: ["Prog Rock","Rock"], accent: 'var(--amber-dim)',
+    name: "Prog Ascend", tags: ["Prog Rock","Rock"], mood: 'Mysterious', accent: 'var(--amber-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'♭III', offset:3, q:'maj' },
@@ -772,7 +828,7 @@ const PROGRESSIONS = [
     desc: "Major triads climbing by thirds instead of the usual circle of fifths — a modal-mixture staircase that never quite tells you which key you're really in."
   },
   {
-    name: "Math Rock Angles", tags: ["Math Rock","Indie"], accent: 'var(--teal-dim)',
+    name: "Math Rock Angles", tags: ["Math Rock","Indie"], mood: 'Tense', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'♭V', offset:6, q:'maj' },
@@ -781,7 +837,7 @@ const PROGRESSIONS = [
     desc: "A tritone leap in the middle of an otherwise ordinary minor loop — the deliberately awkward jump that gives math rock its angular, off-balance feel."
   },
   {
-    name: "Emo Fourth", tags: ["Emo","Indie Rock"], accent: 'var(--amber-dim)',
+    name: "Emo Fourth", tags: ["Emo","Indie Rock"], mood: 'Melancholic', accent: 'var(--amber-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'V', offset:7, q:'maj' },
@@ -791,7 +847,7 @@ const PROGRESSIONS = [
     desc: "I–V–vi–iii — one degree removed from the ubiquitous pop-punk loop, with iii standing in for IV to keep the ending unresolved and aching."
   },
   {
-    name: "Folk Porch", tags: ["Indie Folk","Acoustic"], accent: 'var(--teal-dim)',
+    name: "Folk Porch", tags: ["Indie Folk","Acoustic"], mood: 'Warm', accent: 'var(--teal-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'IV', offset:5, q:'maj' },
@@ -800,7 +856,7 @@ const PROGRESSIONS = [
     desc: "Three chords doing the real work — I and IV and V, played on something with strings and not much processing. Built for a front porch, not a club."
   },
   {
-    name: "8-Bit Loop", tags: ["Chiptune","Video Game"], accent: 'var(--amber-dim)',
+    name: "8-Bit Loop", tags: ["Chiptune","Video Game"], mood: 'Mysterious', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'VI', offset:8, q:'maj' },
@@ -809,7 +865,7 @@ const PROGRESSIONS = [
     desc: "A minor dungeon-crawl loop — i to VI and back down through v — built for square waves and sixteen-step arpeggios."
   },
   {
-    name: "Anime Lo-fi", tags: ["Anime","Lo-fi"], accent: 'var(--teal-dim)',
+    name: "Anime Lo-fi", tags: ["Anime","Lo-fi"], mood: 'Dreamy', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'vi7', offset:9, q:'min7' },
@@ -819,7 +875,7 @@ const PROGRESSIONS = [
     desc: "Maj7 and minor 7ths cycling through a IV that resolves into a suspended dominant — the chord bed under a thousand study-beats compilations."
   },
   {
-    name: "French Filter", tags: ["French House","Filter House"], accent: 'var(--amber-dim)',
+    name: "French Filter", tags: ["French House","Filter House"], mood: 'Uplifting', accent: 'var(--amber-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'IV', offset:5, q:'maj' },
@@ -829,7 +885,7 @@ const PROGRESSIONS = [
     desc: "Bright major triads built to be chopped, filtered, and looped — the disco-into-house progression that turns a sample into an anthem."
   },
   {
-    name: "Nu-Disco Sparkle", tags: ["Nu-Disco","Disco"], accent: 'var(--teal-dim)',
+    name: "Nu-Disco Sparkle", tags: ["Nu-Disco","Disco"], mood: 'Playful', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj9', offset:0, q:'maj9' },
       { roman:'vi9', offset:9, q:'min9' },
@@ -839,7 +895,7 @@ const PROGRESSIONS = [
     desc: "Every chord extended to a ninth — the polished, filtered-strings update on classic disco changes, built for a slap bassline and a falsetto hook."
   },
   {
-    name: "Yacht Rock Cruise", tags: ["Yacht Rock","Soft Rock"], accent: 'var(--amber-dim)',
+    name: "Yacht Rock Cruise", tags: ["Yacht Rock","Soft Rock"], mood: 'Warm', accent: 'var(--amber-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'IVmaj7', offset:5, q:'maj7' },
@@ -849,7 +905,7 @@ const PROGRESSIONS = [
     desc: "Four gliding major sevenths — smooth, unhurried, and built for a chorus-drenched Rhodes and a fretless bass solo."
   },
   {
-    name: "Soul Ballad", tags: ["Soul","Ballad"], accent: 'var(--teal-dim)',
+    name: "Soul Ballad", tags: ["Soul","Ballad"], mood: 'Melancholic', accent: 'var(--teal-dim)',
     chords: [
       { roman:'I6', offset:0, q:'maj6' },
       { roman:'iii7', offset:4, q:'min7' },
@@ -859,7 +915,7 @@ const PROGRESSIONS = [
     desc: "A sixth chord slipping into a diminished passing chord on its way back to IV — the chromatic move that gives a soul ballad its slow-motion ache."
   },
   {
-    name: "Blues Turnaround", tags: ["Blues","Jazz Blues"], accent: 'var(--amber-dim)',
+    name: "Blues Turnaround", tags: ["Blues","Jazz Blues"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'I7', offset:0, q:'dom7' },
       { roman:'IV7', offset:5, q:'dom7' },
@@ -869,7 +925,7 @@ const PROGRESSIONS = [
     desc: "The twelve-bar blues distilled to four chords — every one a dominant seventh, because in the blues even the tonic wants to keep moving."
   },
   {
-    name: "Ragtime Rag", tags: ["Ragtime","Stride"], accent: 'var(--teal-dim)',
+    name: "Ragtime Rag", tags: ["Ragtime","Stride"], mood: 'Playful', accent: 'var(--teal-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'VI7', offset:9, q:'dom7' },
@@ -879,7 +935,7 @@ const PROGRESSIONS = [
     desc: "A secondary dominant borrowed from ii, then the standard ii–V home — the walking-bass trick that powered ragtime straight into early jazz."
   },
   {
-    name: "Circle Waltz", tags: ["Jazz Waltz","Circle of Fifths"], accent: 'var(--amber-dim)',
+    name: "Circle Waltz", tags: ["Jazz Waltz","Circle of Fifths"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'iii7', offset:4, q:'min7' },
       { roman:'vi7', offset:9, q:'min7' },
@@ -889,7 +945,7 @@ const PROGRESSIONS = [
     desc: "A full lap around the circle of fifths — iii to vi to ii to V, each chord setting up the next like dominoes. Play it in three and it swings."
   },
   {
-    name: "Samba Sunrise", tags: ["Samba","Latin Jazz"], accent: 'var(--teal-dim)',
+    name: "Samba Sunrise", tags: ["Samba","Latin Jazz"], mood: 'Warm', accent: 'var(--teal-dim)',
     chords: [
       { roman:'Imaj7', offset:0, q:'maj7' },
       { roman:'IV7', offset:5, q:'dom7' },
@@ -899,7 +955,7 @@ const PROGRESSIONS = [
     desc: "A maj7 tonic answered by its own dominant and a minor-sixth variant — the modal-mixture trick that gives samba and bossa their warm, bittersweet lift."
   },
   {
-    name: "Dub Chamber", tags: ["Dub","Reggae"], accent: 'var(--amber-dim)',
+    name: "Dub Chamber", tags: ["Dub","Reggae"], mood: 'Mysterious', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i7', offset:0, q:'min7' },
       { roman:'iv7', offset:5, q:'min7' },
@@ -908,7 +964,7 @@ const PROGRESSIONS = [
     desc: "A minor one-drop skank — three chords with heavy space between them, built for a cavern of reverb and a bassline that does most of the talking."
   },
   {
-    name: "Ska Upstroke", tags: ["Ska","Two-Tone"], accent: 'var(--teal-dim)',
+    name: "Ska Upstroke", tags: ["Ska","Two-Tone"], mood: 'Uplifting', accent: 'var(--teal-dim)',
     chords: [
       { roman:'I', offset:0, q:'maj' },
       { roman:'V', offset:7, q:'maj' },
@@ -917,7 +973,7 @@ const PROGRESSIONS = [
     desc: "I–V–IV on the upstroke — bright, fast, and built to be chopped into offbeat stabs by a horn section or a choppy guitar."
   },
   {
-    name: "Dancehall Riddim", tags: ["Dancehall","Reggae"], accent: 'var(--amber-dim)',
+    name: "Dancehall Riddim", tags: ["Dancehall","Reggae"], mood: 'Playful', accent: 'var(--amber-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'VII', offset:10, q:'maj' },
@@ -926,7 +982,7 @@ const PROGRESSIONS = [
     desc: "A three-chord minor riddim loop, built to repeat for four minutes while the toasting does the actual songwriting."
   },
   {
-    name: "Jump Up Bassline", tags: ["Drum & Bass","Jump Up"], accent: 'var(--teal-dim)',
+    name: "Jump Up Bassline", tags: ["Drum & Bass","Jump Up"], mood: 'Dark', accent: 'var(--teal-dim)',
     chords: [
       { roman:'i', offset:0, q:'min' },
       { roman:'♭III', offset:3, q:'maj' },
@@ -935,7 +991,7 @@ const PROGRESSIONS = [
     desc: "A dark minor loop with a major ♭III — the jump-up staple built to sit under a reese bass and not get in its way."
   },
   {
-    name: "Liquid Funk Flow", tags: ["Liquid DnB","Drum & Bass"], accent: 'var(--amber-dim)',
+    name: "Liquid Funk Flow", tags: ["Liquid DnB","Drum & Bass"], mood: 'Dreamy', accent: 'var(--amber-dim)',
     chords: [
       { roman:'Imaj9', offset:0, q:'maj9' },
       { roman:'vi9', offset:9, q:'min9' },
@@ -945,7 +1001,7 @@ const PROGRESSIONS = [
     desc: "Ninth chords all the way down, ending on a suspended dominant — the smooth, jazzy chord bed liquid drum and bass borrowed straight from broken beat."
   },
   {
-    name: "Future Bass Lift", tags: ["Future Bass","Electronic"], accent: 'var(--teal-dim)',
+    name: "Future Bass Lift", tags: ["Future Bass","Electronic"], mood: 'Uplifting', accent: 'var(--teal-dim)',
     chords: [
       { roman:'vi9', offset:9, q:'min9' },
       { roman:'IVmaj9', offset:5, q:'maj9' },
@@ -1058,25 +1114,174 @@ function highlightChord(rootPc, tonePcs){
 
 // ---------- audio ----------
 let actx = null;
-function playChord(rootPc, intervals){
-  if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-  const now = actx.currentTime;
-  const rootMidi = 60 + rootPc;
-  intervals.forEach((iv, i) => {
-    const midi = rootMidi + iv;
-    const freq = 440 * Math.pow(2, (midi - 69) / 12);
-    const osc = actx.createOscillator();
-    const gain = actx.createGain();
-    osc.type = i === 0 ? 'triangle' : 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.16 / intervals.length, now + 0.04);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.4);
-    osc.connect(gain).connect(actx.destination);
-    osc.start(now);
-    osc.stop(now + 1.5);
-  });
+
+const INSTRUMENTS = [
+  { id:'piano',  name:'Piano' },
+  { id:'epiano', name:'Rhodes' },
+  { id:'pad',    name:'Pad' },
+  { id:'pluck',  name:'Pluck' },
+  { id:'organ',  name:'Organ' },
+  { id:'bass',   name:'Bass' },
+];
+let currentInstrument = 'piano';
+
+// attack/decay/sustain/release per instrument, in seconds (sustain is a 0-1 gain level)
+const ENVELOPES = {
+  piano:  { attack:0.006, decay:1.3,  sustain:0.05, release:0.5 },
+  epiano: { attack:0.02,  decay:0.5,  sustain:0.4,  release:0.7 },
+  pad:    { attack:0.5,   decay:0.4,  sustain:0.7,  release:1.8 },
+  pluck:  { attack:0.004, decay:0.45, sustain:0.0,  release:0.2 },
+  organ:  { attack:0.01,  decay:0.05, sustain:0.85, release:0.15 },
+  bass:   { attack:0.008, decay:0.15, sustain:0.6,  release:0.35 },
+};
+
+function midiToFreq(midi){
+  return 440 * Math.pow(2, (midi - 69) / 12);
 }
+
+// each builder wires oscillators into `amp` and starts them; the shared ADSR envelope
+// (below) controls `amp`'s gain, so releasing simply ramps amp down and stops the oscillators.
+function buildPianoGraph(freq, now, amp){
+  const osc1 = actx.createOscillator(); osc1.type = 'triangle'; osc1.frequency.value = freq;
+  const osc2 = actx.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = freq * 2;
+  const g2 = actx.createGain(); g2.gain.value = 0.15;
+  const filt = actx.createBiquadFilter(); filt.type = 'lowpass';
+  filt.frequency.setValueAtTime(5000, now);
+  filt.frequency.exponentialRampToValueAtTime(700, now + 1.6);
+  osc1.connect(filt);
+  osc2.connect(g2).connect(filt);
+  filt.connect(amp);
+  osc1.start(now); osc2.start(now);
+  return [osc1, osc2];
+}
+
+function buildEPianoGraph(freq, now, amp){
+  const osc = actx.createOscillator(); osc.type = 'sine'; osc.frequency.value = freq;
+  const osc2 = actx.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = freq * 4.03;
+  const g2 = actx.createGain(); g2.gain.value = 0.05;
+  osc.connect(amp);
+  osc2.connect(g2).connect(amp);
+  osc.start(now); osc2.start(now);
+  return [osc, osc2];
+}
+
+function buildPadGraph(freq, now, amp){
+  const osc1 = actx.createOscillator(); osc1.type = 'sawtooth'; osc1.frequency.value = freq; osc1.detune.value = -6;
+  const osc2 = actx.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.value = freq; osc2.detune.value = 6;
+  const sub = actx.createOscillator(); sub.type = 'sine'; sub.frequency.value = freq / 2;
+  const subG = actx.createGain(); subG.gain.value = 0.3;
+  const filt = actx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 1800; filt.Q.value = 0.7;
+  osc1.connect(filt); osc2.connect(filt);
+  sub.connect(subG).connect(filt);
+  filt.connect(amp);
+  osc1.start(now); osc2.start(now); sub.start(now);
+  return [osc1, osc2, sub];
+}
+
+function buildPluckGraph(freq, now, amp){
+  const osc = actx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = freq;
+  const filt = actx.createBiquadFilter(); filt.type = 'lowpass';
+  filt.frequency.setValueAtTime(3200, now);
+  filt.frequency.exponentialRampToValueAtTime(300, now + 0.35);
+  osc.connect(filt).connect(amp);
+  osc.start(now);
+  return [osc];
+}
+
+function buildOrganGraph(freq, now, amp){
+  const ratios = [1, 2, 3];
+  const gains = [0.5, 0.3, 0.15];
+  const oscs = [];
+  ratios.forEach((r, i) => {
+    const osc = actx.createOscillator(); osc.type = 'sine'; osc.frequency.value = freq * r;
+    const g = actx.createGain(); g.gain.value = gains[i];
+    osc.connect(g).connect(amp);
+    osc.start(now);
+    oscs.push(osc);
+  });
+  return oscs;
+}
+
+function buildBassGraph(freq, now, amp){
+  const osc = actx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = freq / 2;
+  const filt = actx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 900;
+  osc.connect(filt).connect(amp);
+  osc.start(now);
+  return [osc];
+}
+
+const GRAPH_BUILDERS = {
+  piano: buildPianoGraph,
+  epiano: buildEPianoGraph,
+  pad: buildPadGraph,
+  pluck: buildPluckGraph,
+  organ: buildOrganGraph,
+  bass: buildBassGraph,
+};
+
+// starts one note, held at sustain level until .release() is called
+function startVoice(instId, freq, dest){
+  const now = actx.currentTime;
+  const env = ENVELOPES[instId] || ENVELOPES.piano;
+  const build = GRAPH_BUILDERS[instId] || buildPianoGraph;
+
+  const amp = actx.createGain();
+  amp.gain.setValueAtTime(0, now);
+  amp.gain.linearRampToValueAtTime(1, now + env.attack);
+  amp.gain.linearRampToValueAtTime(Math.max(env.sustain, 0.0001), now + env.attack + env.decay);
+  amp.connect(dest);
+
+  const oscillators = build(freq, now, amp);
+
+  return {
+    release(){
+      const relNow = actx.currentTime;
+      amp.gain.cancelScheduledValues(relNow);
+      amp.gain.setValueAtTime(amp.gain.value, relNow);
+      amp.gain.linearRampToValueAtTime(0.0001, relNow + env.release);
+      oscillators.forEach(o => { try{ o.stop(relNow + env.release + 0.05); }catch(e){} });
+    }
+  };
+}
+
+// starts a full chord, held until .release() is called on the returned handle
+function startChordHold(rootPc, intervals){
+  if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if(actx.state === 'suspended') actx.resume();
+  const rootMidi = 60 + rootPc;
+  const master = actx.createGain();
+  master.gain.value = 0.9 / Math.max(intervals.length, 1);
+  master.connect(actx.destination);
+  const voices = intervals.map(iv => startVoice(currentInstrument, midiToFreq(rootMidi + iv), master));
+  return {
+    release(){
+      voices.forEach(v => v.release());
+      setTimeout(() => { try{ master.disconnect(); }catch(e){} }, 3000);
+    }
+  };
+}
+
+// only one chord sounds at a time; releasing anywhere (even off the chip) stops it
+let heldChord = null;
+function releaseHeldChord(){
+  if(heldChord){ heldChord.release(); heldChord = null; }
+}
+window.addEventListener('pointerup', releaseHeldChord);
+window.addEventListener('pointercancel', releaseHeldChord);
+
+// instrument switcher
+const instrumentRow = document.getElementById('instrumentRow');
+INSTRUMENTS.forEach(inst => {
+  const b = document.createElement('button');
+  b.className = 'inst-btn' + (inst.id === currentInstrument ? ' active' : '');
+  b.textContent = inst.name;
+  b.addEventListener('click', () => {
+    currentInstrument = inst.id;
+    instrumentRow.querySelectorAll('.inst-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+  });
+  instrumentRow.appendChild(b);
+});
 
 // ---------- readout ----------
 const rdName = document.getElementById('rdName');
@@ -1167,8 +1372,10 @@ function renderGrid(){
         if(state.locked === chip) return;
         clearReadout();
       });
-      chip.addEventListener('click', () => {
-        playChord(info.rootPc, info.quality.iv);
+      chip.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        releaseHeldChord();
+        heldChord = startChordHold(info.rootPc, info.quality.iv);
         document.querySelectorAll('.chip.locked').forEach(c => c.classList.remove('locked'));
         chip.classList.add('locked');
         state.locked = chip;
