@@ -459,6 +459,7 @@
     <span class="name" id="rdName"></span>
     <span class="notes" id="rdNotes"></span>
     <span class="hint" id="rdHint">hover a chord above — click to hear it</span>
+    <span class="hint" id="rdDebug" style="display:none;"></span>
   </div>
   <div class="keyboard">
     <div class="keys" id="keys"></div>
@@ -1346,14 +1347,15 @@ function startVoice(instId, freq, dest){
 function startChordHold(rootPc, intervals){
   if(!actx){
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    try{
-      actx = new Ctx({ sampleRate: 44100 });
-    }catch(e){
-      actx = new Ctx();
-    }
+    actx = new Ctx();
   }
   if(actx.state === 'suspended') actx.resume();
   const rootMidi = 60 + rootPc + (octaveOffset * 12);
+  const rootFreq = midiToFreq(rootMidi);
+  if(rdDebug){
+    rdDebug.style.display = 'inline';
+    rdDebug.textContent = 'ctx ' + actx.sampleRate + 'Hz \u00B7 root ' + rootFreq.toFixed(1) + 'Hz';
+  }
   const master = actx.createGain();
   master.gain.value = 0.75 / Math.max(intervals.length, 1);
   master.connect(getLimiterBus());
@@ -1436,6 +1438,7 @@ instrumentRow.appendChild(octaveControl);
 const rdName = document.getElementById('rdName');
 const rdNotes = document.getElementById('rdNotes');
 const rdHint = document.getElementById('rdHint');
+const rdDebug = document.getElementById('rdDebug');
 
 function clearReadout(){
   rdName.textContent = '';
