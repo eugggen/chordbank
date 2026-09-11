@@ -1344,7 +1344,14 @@ function startVoice(instId, freq, dest){
 
 // starts a full chord, held until .release() is called on the returned handle
 function startChordHold(rootPc, intervals){
-  if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if(!actx){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    try{
+      actx = new Ctx({ sampleRate: 44100 });
+    }catch(e){
+      actx = new Ctx();
+    }
+  }
   if(actx.state === 'suspended') actx.resume();
   const rootMidi = 60 + rootPc + (octaveOffset * 12);
   const master = actx.createGain();
