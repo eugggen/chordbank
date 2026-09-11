@@ -191,6 +191,10 @@
     padding: 3px 8px;
     white-space: nowrap;
   }
+  .pill.mood{
+    color: var(--amber);
+    border-color: var(--amber-dim);
+  }
 
   .chip-row{
     display:flex;
@@ -1012,9 +1016,9 @@ const PROGRESSIONS = [
   },
 ];
 
-let state = { key: 0, tag: 'All', locked: null };
+let state = { key: 0, mode: 'style', tag: 'All', locked: null };
 
-// ---------- key + tag rows ----------
+// ---------- key row ----------
 const keyRow = document.getElementById('keyRow');
 NOTE_NAMES.forEach((n, i) => {
   const b = document.createElement('button');
@@ -1030,19 +1034,50 @@ NOTE_NAMES.forEach((n, i) => {
   keyRow.appendChild(b);
 });
 
-const allTags = ['All', ...Array.from(new Set(PROGRESSIONS.flatMap(p => p.tags)))];
+// ---------- mode switch (styles vs moods) + tag row ----------
+const STYLE_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.flatMap(p => p.tags)))];
+const MOOD_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.map(p => p.mood)))];
+
+const modeSwitch = document.getElementById('modeSwitch');
 const tagRow = document.getElementById('tagRow');
-allTags.forEach(t => {
+
+const MODES = [
+  { id:'style', label:'Styles' },
+  { id:'mood', label:'Moods' },
+];
+
+MODES.forEach(m => {
   const b = document.createElement('button');
-  b.className = 'tag-btn' + (t === state.tag ? ' active' : '');
-  b.textContent = t;
+  b.className = 'mode-btn' + (m.id === state.mode ? ' active' : '');
+  b.textContent = m.label;
   b.addEventListener('click', () => {
-    state.tag = t;
-    [...tagRow.children].forEach(c => c.classList.toggle('active', c.textContent===t));
+    if(state.mode === m.id) return;
+    state.mode = m.id;
+    state.tag = 'All';
+    modeSwitch.querySelectorAll('.mode-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    renderTagRow();
     renderGrid();
   });
-  tagRow.appendChild(b);
+  modeSwitch.appendChild(b);
 });
+
+function renderTagRow(){
+  tagRow.innerHTML = '';
+  const tags = state.mode === 'style' ? STYLE_TAGS : MOOD_TAGS;
+  tags.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'tag-btn' + (t === state.tag ? ' active' : '');
+    b.textContent = t;
+    b.addEventListener('click', () => {
+      state.tag = t;
+      [...tagRow.children].forEach(c => c.classList.toggle('active', c.textContent===t));
+      renderGrid();
+    });
+    tagRow.appendChild(b);
+  });
+}
+renderTagRow();
 
 // ---------- keyboard build (shared by the bottom keyboard and each chip's mini keyboard) ----------
 const WHITE_PC = [0,2,4,5,7,9,11];
@@ -1114,6 +1149,21 @@ function highlightChord(rootPc, tonePcs){
 
 // ---------- audio ----------
 let actx = null;
+let limiterBus = null;
+
+function getLimiterBus(){
+  if(!limiterBus){
+    const comp = actx.createDynamicsCompressor();
+    comp.threshold.value = -10;
+    comp.knee.value = 8;
+    comp.ratio.value = 16;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.25;
+    comp.connect(actx.destination);
+    limiterBus = comp;
+  }
+  return limiterBus;
+}
 
 const INSTRUMENTS = [
   { id:'piano',  name:'Piano' },
@@ -1250,8 +1300,8 @@ function startChordHold(rootPc, intervals){
   if(actx.state === 'suspended') actx.resume();
   const rootMidi = 60 + rootPc;
   const master = actx.createGain();
-  master.gain.value = 0.9 / Math.max(intervals.length, 1);
-  master.connect(actx.destination);
+  master.gain.value = 0.75 / Math.max(intervals.length, 1);
+  master.connect(getLimiterBus());
   const voices = intervals.map(iv => startVoice(currentInstrument, midiToFreq(rootMidi + iv), master));
   return {
     release(){
@@ -1315,7 +1365,10 @@ function chordInfo(key, chord){
 
 function renderGrid(){
   grid.innerHTML = '';
-  const filtered = PROGRESSIONS.filter(p => state.tag === 'All' || p.tags.includes(state.tag));
+  const filtered = PROGRESSIONS.filter(p => {
+    if(state.tag === 'All') return true;
+    return state.mode === 'style' ? p.tags.includes(state.tag) : p.mood === state.tag;
+  });
   filtered.forEach(prog => {
     const card = document.createElement('div');
     card.className = 'card';
@@ -1327,6 +1380,10 @@ function renderGrid(){
     h2.textContent = prog.name;
     const tagsWrap = document.createElement('div');
     tagsWrap.className = 'card-tags';
+    const moodPill = document.createElement('span');
+    moodPill.className = 'pill mood';
+    moodPill.textContent = prog.mood;
+    tagsWrap.appendChild(moodPill);
     prog.tags.forEach(t => {
       const p = document.createElement('span');
       p.className = 'pill';
