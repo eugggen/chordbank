@@ -28,7 +28,7 @@
     color: var(--ink);
     font-family: 'IBM Plex Mono', monospace;
     -webkit-font-smoothing: antialiased;
-    padding-bottom: 228px;
+    padding-bottom: 130px;
   }
   ::selection{ background: var(--amber-dim); color: var(--ink); }
 
@@ -159,19 +159,18 @@
   .grid{
     display:grid;
     grid-template-columns: 1fr;
-    gap: 22px;
+    gap: 0;
   }
 
   .card{
-    background: var(--panel);
-    border: 1px solid var(--line-soft);
-    border-top: 2px solid var(--card-accent, var(--teal-dim));
-    border-radius: 4px;
-    padding: 28px 30px 26px;
+    border-bottom: 1px solid var(--line-soft);
+    padding: 24px 0;
     display:flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
   }
+  .card:first-child{ padding-top: 4px; }
+  .card:last-child{ border-bottom: none; }
   .card-head{
     display:flex;
     align-items: baseline;
@@ -247,7 +246,19 @@
   }
   .mini-kb{
     flex-shrink: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+  }
+
+  @media (max-width: 700px){
+    .wrap{ padding: 28px 14px 16px; }
+    .chip{ padding: 10px 12px; gap: 10px; }
+    .chip-text{ min-width: 0; gap: 2px; }
+    .chip .roman{ font-size: 15px; }
+    .chip .sym{ font-size: 10px; }
+    .card-head h2{ font-size: 21px; }
+    .card-desc{ font-size: 14.5px; }
   }
 
   .card-desc{
@@ -304,6 +315,18 @@
     font-size: 11px;
     margin-right: 2px;
   }
+  .key-select{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  .key-select:hover{ border-color: var(--muted-2); }
   .inst-btn{
     background: transparent;
     border: 1px solid var(--line);
@@ -357,18 +380,13 @@
     text-align: center;
   }
 
-  .keyboard{
-    max-width: 980px;
-    margin: 0 auto;
-    overflow-x: auto;
-    padding-bottom: 2px;
-  }
   .keys{
     position: relative;
     height: 108px;
     display:flex;
     width: max-content;
     min-width: 100%;
+    --bkey-w: 21px;
   }
   .wkey{
     position: relative;
@@ -415,11 +433,17 @@
   .root .dot{ background: var(--amber); }
 
   /* mini keyboard, used inside each chord chip */
-  .keys.mini{ height: 92px; }
-  .keys.mini .wkey{ width: 26px; height: 92px; border-radius: 0 0 3px 3px; }
-  .keys.mini .bkey{ width: 16px; height: 56px; }
+  .keys.mini{ height: 92px; --wkey-w: 26px; --bkey-w: 16px; }
+  .keys.mini .wkey{ width: var(--wkey-w); height: 92px; border-radius: 0 0 3px 3px; }
+  .keys.mini .bkey{ width: var(--bkey-w); height: 56px; }
   .keys.mini .wkey .dot{ width:11px; height:11px; bottom:9px; }
   .keys.mini .bkey .dot{ width:9px; height:9px; bottom:7px; }
+
+  @media (max-width: 700px){
+    .keys.mini{ --wkey-w: 15px; --bkey-w: 9px; }
+    .keys.mini .wkey .dot{ width:8px; height:8px; bottom:8px; }
+    .keys.mini .bkey .dot{ width:6px; height:6px; bottom:6px; }
+  }
 
   footer{
     max-width: 980px;
@@ -448,21 +472,19 @@
 
   <div class="grid" id="grid"></div>
 
-  <footer>Roman numerals follow standard notation — lowercase for minor, ♭ for chords borrowed outside the key. Keyboard highlights are pitch classes, shown across both visible octaves regardless of the actual voicing.</footer>
+  <footer>Roman numerals follow standard notation — lowercase for minor, ♭ for chords borrowed outside the key. Bright dots mark the chord's actual voicing; faint dots mark other places the same note repeats across the two octaves shown.</footer>
 </div>
 
 <div class="keyboard-panel">
   <div class="instrument-row" id="instrumentRow">
+    <span class="instrument-label">key</span>
+    <select class="key-select" id="keySelect"></select>
     <span class="instrument-label">preview instrument</span>
   </div>
   <div class="kb-readout">
     <span class="name" id="rdName"></span>
     <span class="notes" id="rdNotes"></span>
-    <span class="hint" id="rdHint">hover a chord above — click to hear it</span>
     <span class="hint" id="rdDebug" style="display:none;"></span>
-  </div>
-  <div class="keyboard">
-    <div class="keys" id="keys"></div>
   </div>
 </div>
 
@@ -1063,21 +1085,34 @@ const PROGRESSIONS = [
 
 let state = { key: 0, mode: 'style', tag: 'All', locked: null };
 
-// ---------- key row ----------
+// ---------- key row (top) + key select (bottom bar) ----------
 const keyRow = document.getElementById('keyRow');
+const keySelect = document.getElementById('keySelect');
+
 NOTE_NAMES.forEach((n, i) => {
   const b = document.createElement('button');
   b.className = 'key-btn' + (i === state.key ? ' active' : '');
   b.textContent = n;
-  b.addEventListener('click', () => {
-    state.key = i;
-    document.getElementById('currentKeyLabel').textContent = n;
-    [...keyRow.children].forEach((c,ci) => c.classList.toggle('active', ci===i));
-    renderGrid();
-    clearReadout();
-  });
+  b.addEventListener('click', () => setKey(i));
   keyRow.appendChild(b);
+
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = n;
+  if(i === state.key) opt.selected = true;
+  keySelect.appendChild(opt);
 });
+
+keySelect.addEventListener('change', () => setKey(parseInt(keySelect.value, 10)));
+
+function setKey(i){
+  state.key = i;
+  document.getElementById('currentKeyLabel').textContent = NOTE_NAMES[i];
+  [...keyRow.children].forEach((c, ci) => c.classList.toggle('active', ci === i));
+  keySelect.value = i;
+  renderGrid();
+  clearReadout();
+}
 
 // ---------- mode switch (styles vs moods) + tag row ----------
 const STYLE_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.flatMap(p => p.tags)))];
@@ -1128,10 +1163,13 @@ renderTagRow();
 const WHITE_PC = [0,2,4,5,7,9,11];
 const BLACK_AFTER = {0:1, 2:3, 5:6, 7:8, 9:10}; // white pc -> black pc that sits just after it
 
-// whiteWidth/blackWidth must match the CSS pixel widths for .wkey/.bkey (or .keys.mini .wkey/.bkey)
-function buildKeyboardEl(octaves, whiteWidth, blackWidth, mini, showLabel){
+// black keys are positioned as a percentage of the keyboard's total width (which is always
+// exactly totalWhite * var(--wkey-w)), so this stays correct at any responsive breakpoint
+// without needing to know the actual pixel width in JS.
+function buildKeyboardEl(octaves, mini, showLabel){
   const keys = document.createElement('div');
   keys.className = 'keys' + (mini ? ' mini' : '');
+  const totalWhite = octaves * WHITE_PC.length;
 
   for(let oct=0; oct<octaves; oct++){
     WHITE_PC.forEach(pc => {
@@ -1160,7 +1198,8 @@ function buildKeyboardEl(octaves, whiteWidth, blackWidth, mini, showLabel){
         const dot = document.createElement('span');
         dot.className = 'dot';
         b.appendChild(dot);
-        b.style.left = ((idx+1) * whiteWidth - blackWidth/2) + 'px';
+        const leftPct = ((idx + 1) / totalWhite) * 100;
+        b.style.left = 'calc(' + leftPct + '% - (var(--bkey-w) / 2))';
         keys.appendChild(b);
       }
       idx++;
@@ -1176,20 +1215,6 @@ function setKeysChord(keysEl, rootPc, tonePcs){
     if(pc === rootPc) k.classList.add('root');
     else if(tonePcs.includes(pc)) k.classList.add('tone');
   });
-}
-
-// bottom keyboard: 2 octaves, full size
-const keyboardMount = document.getElementById('keys');
-const mainKeys = buildKeyboardEl(2, 34, 21, false, true);
-keyboardMount.replaceWith(mainKeys);
-mainKeys.id = 'keys';
-
-function clearKeyboard(){
-  setKeysChord(mainKeys, -1, []);
-}
-
-function highlightChord(rootPc, tonePcs){
-  setKeysChord(mainKeys, rootPc, tonePcs);
 }
 
 // ---------- audio ----------
@@ -1441,21 +1466,17 @@ instrumentRow.appendChild(octaveControl);
 // ---------- readout ----------
 const rdName = document.getElementById('rdName');
 const rdNotes = document.getElementById('rdNotes');
-const rdHint = document.getElementById('rdHint');
 const rdDebug = document.getElementById('rdDebug');
 
 function clearReadout(){
   rdName.textContent = '';
   rdNotes.textContent = '';
-  rdHint.style.display = 'block';
-  clearKeyboard();
 }
 
 function setReadout(rootPc, quality, tonePcsAll){
   const rootName = NOTE_NAMES[rootPc];
   rdName.textContent = rootName + quality.suf;
   rdNotes.textContent = tonePcsAll.map(pc => NOTE_NAMES[pc]).join('  ');
-  rdHint.style.display = 'none';
 }
 
 // ---------- grid ----------
@@ -1478,7 +1499,6 @@ function renderGrid(){
   filtered.forEach(prog => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.style.setProperty('--card-accent', prog.accent);
 
     const head = document.createElement('div');
     head.className = 'card-head';
@@ -1520,7 +1540,7 @@ function renderGrid(){
 
       const miniWrap = document.createElement('div');
       miniWrap.className = 'mini-kb';
-      const miniKeys = buildKeyboardEl(1, 26, 16, true, false);
+      const miniKeys = buildKeyboardEl(2, true, false);
       setKeysChord(miniKeys, info.rootPc, info.uniqueTones);
       miniWrap.appendChild(miniKeys);
 
@@ -1528,7 +1548,6 @@ function renderGrid(){
       chip.appendChild(miniWrap);
 
       chip.addEventListener('mouseenter', () => {
-        highlightChord(info.rootPc, info.uniqueTones);
         setReadout(info.rootPc, info.quality, info.tonePcsAll);
       });
       chip.addEventListener('mouseleave', () => {
@@ -1542,7 +1561,6 @@ function renderGrid(){
         document.querySelectorAll('.chip.locked').forEach(c => c.classList.remove('locked'));
         chip.classList.add('locked');
         state.locked = chip;
-        highlightChord(info.rootPc, info.uniqueTones);
         setReadout(info.rootPc, info.quality, info.tonePcsAll);
       });
 
