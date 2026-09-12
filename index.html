@@ -440,9 +440,9 @@
   .keys.mini .bkey .dot{ width:9px; height:9px; bottom:7px; }
 
   @media (max-width: 700px){
-    .keys.mini{ --wkey-w: 18px; --bkey-w: 11px; }
-    .keys.mini .wkey .dot{ width:9px; height:9px; bottom:8px; }
-    .keys.mini .bkey .dot{ width:7px; height:7px; bottom:6px; }
+    .keys.mini{ --wkey-w: 22px; --bkey-w: 14px; }
+    .keys.mini .wkey .dot{ width:10px; height:10px; bottom:9px; }
+    .keys.mini .bkey .dot{ width:8px; height:8px; bottom:7px; }
   }
 
   footer{
@@ -489,6 +489,17 @@
 </div>
 
 <script>
+// ---------- settings persistence (cookies) ----------
+function setCookie(name, value){
+  const d = new Date();
+  d.setTime(d.getTime() + 365 * 24 * 60 * 60 * 1000);
+  document.cookie = 'chordbank_' + name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
+}
+function getCookie(name){
+  const match = document.cookie.match(new RegExp('(?:^|; )chordbank_' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 const NOTE_NAMES = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
 
 const QUALITIES = {
@@ -1083,7 +1094,9 @@ const PROGRESSIONS = [
   },
 ];
 
-let state = { key: 0, mode: 'style', tag: 'All', locked: null };
+const savedKey = parseInt(getCookie('key'), 10);
+let state = { key: (Number.isInteger(savedKey) && savedKey >= 0 && savedKey <= 11) ? savedKey : 0, mode: 'style', tag: 'All', locked: null };
+document.getElementById('currentKeyLabel').textContent = NOTE_NAMES[state.key];
 
 // ---------- key row (top) + key select (bottom bar) ----------
 const keyRow = document.getElementById('keyRow');
@@ -1110,6 +1123,7 @@ function setKey(i){
   document.getElementById('currentKeyLabel').textContent = NOTE_NAMES[i];
   [...keyRow.children].forEach((c, ci) => c.classList.toggle('active', ci === i));
   keySelect.value = i;
+  setCookie('key', i);
   renderGrid();
   clearReadout();
 }
@@ -1243,7 +1257,8 @@ const INSTRUMENTS = [
   { id:'organ',  name:'Organ' },
   { id:'bass',   name:'Bass' },
 ];
-let currentInstrument = 'piano';
+const savedInstrument = getCookie('instrument');
+let currentInstrument = INSTRUMENTS.some(i => i.id === savedInstrument) ? savedInstrument : 'piano';
 
 // attack/decay/sustain/release per instrument, in seconds (sustain is a 0-1 gain level)
 const ENVELOPES = {
@@ -1413,6 +1428,7 @@ INSTRUMENTS.forEach(inst => {
   b.textContent = inst.name;
   b.addEventListener('click', () => {
     currentInstrument = inst.id;
+    setCookie('instrument', inst.id);
     instrumentRow.querySelectorAll('.inst-btn').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
   });
@@ -1420,9 +1436,10 @@ INSTRUMENTS.forEach(inst => {
 });
 
 // octave shifter — clamps to -2..+2 octaves, applied to whichever instrument is selected
-let octaveOffset = 0;
 const OCTAVE_MIN = -2;
 const OCTAVE_MAX = 2;
+const savedOctave = parseInt(getCookie('octave'), 10);
+let octaveOffset = (Number.isInteger(savedOctave) && savedOctave >= OCTAVE_MIN && savedOctave <= OCTAVE_MAX) ? savedOctave : 0;
 
 const octaveControl = document.createElement('div');
 octaveControl.className = 'octave-control';
@@ -1449,10 +1466,12 @@ function updateOctaveDisplay(){
 }
 octDownBtn.addEventListener('click', () => {
   octaveOffset = Math.max(OCTAVE_MIN, octaveOffset - 1);
+  setCookie('octave', octaveOffset);
   updateOctaveDisplay();
 });
 octUpBtn.addEventListener('click', () => {
   octaveOffset = Math.min(OCTAVE_MAX, octaveOffset + 1);
+  setCookie('octave', octaveOffset);
   updateOctaveDisplay();
 });
 updateOctaveDisplay();
