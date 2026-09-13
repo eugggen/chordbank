@@ -81,17 +81,17 @@
 
   /* key selector */
   .key-row{
-    display:flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display:grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 8px;
     margin-bottom: 18px;
   }
   .key-btn{
     background: var(--panel);
     border: 1px solid var(--line);
     color: var(--muted);
-    padding: 14px 4px;
-    width: 52px;
+    padding: 14px 2px;
+    width: 100%;
     min-height: 44px;
     border-radius: 3px;
     cursor: pointer;
@@ -116,6 +116,13 @@
     padding-bottom: 28px;
     border-bottom: 1px solid var(--line-soft);
   }
+  .tag-row.tag-row-grid{
+    display: grid;
+    grid-template-columns: repeat(var(--mood-count, 9), 1fr);
+  }
+  @media (max-width: 700px){
+    .tag-row.tag-row-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
   .tag-btn{
     background: transparent;
     border: 1px solid var(--line);
@@ -125,6 +132,10 @@
     font-size: 12px;
     cursor: pointer;
     transition: border-color .12s ease, color .12s ease;
+  }
+  .tag-row-grid .tag-btn{
+    width: 100%;
+    text-align: center;
   }
   .tag-btn:hover{ color: var(--ink); border-color: var(--muted-2); }
   .tag-btn.active{
@@ -1158,7 +1169,10 @@ MODES.forEach(m => {
 
 function renderTagRow(){
   tagRow.innerHTML = '';
-  const tags = state.mode === 'style' ? STYLE_TAGS : MOOD_TAGS;
+  const isMoodMode = state.mode === 'mood';
+  const tags = isMoodMode ? MOOD_TAGS : STYLE_TAGS;
+  tagRow.classList.toggle('tag-row-grid', isMoodMode);
+  tagRow.style.setProperty('--mood-count', tags.length);
   tags.forEach(t => {
     const b = document.createElement('button');
     b.className = 'tag-btn' + (t === state.tag ? ' active' : '');
