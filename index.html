@@ -270,6 +270,17 @@
     .chip .sym{ font-size: 10px; }
     .card-head h2{ font-size: 21px; }
     .card-desc{ font-size: 14.5px; }
+
+    .instrument-word{ display: none; }
+    .keyboard-panel{ padding: 10px 10px 14px; }
+    .instrument-row{ gap: 6px; }
+    .instrument-label{ font-size: 10px; }
+    .key-select{ font-size: 11px; padding: 3px 6px; margin-right: 6px; }
+    .inst-btn{ padding: 4px 8px; font-size: 10.5px; }
+    .octave-control{ gap: 4px; margin-left: 6px; padding-left: 8px; }
+    .octave-label{ font-size: 10px; }
+    .oct-btn{ width: 20px; height: 20px; font-size: 12px; }
+    .octave-value{ font-size: 11px; min-width: 22px; }
   }
 
   .card-desc{
@@ -319,12 +330,15 @@
     display:flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
   .instrument-label{
     color: var(--muted-2);
     font-size: 11px;
     margin-right: 2px;
+    flex-shrink: 0;
   }
   .key-select{
     background: var(--panel);
@@ -336,6 +350,7 @@
     font-family: 'IBM Plex Mono', monospace;
     cursor: pointer;
     margin-right: 10px;
+    flex-shrink: 0;
   }
   .key-select:hover{ border-color: var(--muted-2); }
   .inst-btn{
@@ -346,6 +361,7 @@
     border-radius: 3px;
     font-size: 11.5px;
     cursor: pointer;
+    flex-shrink: 0;
     transition: border-color .12s ease, color .12s ease, background .12s ease;
   }
   .inst-btn:hover{ color: var(--ink); border-color: var(--muted-2); }
@@ -362,6 +378,7 @@
     margin-left: 8px;
     padding-left: 12px;
     border-left: 1px solid var(--line-soft);
+    flex-shrink: 0;
   }
   .octave-label{
     color: var(--muted-2);
@@ -487,14 +504,10 @@
 </div>
 
 <div class="keyboard-panel">
-  <div class="instrument-row" id="keyOctaveRow">
+  <div class="instrument-row" id="instrumentRow">
     <span class="instrument-label">key</span>
     <select class="key-select" id="keySelect"></select>
   </div>
-  <div class="instrument-row">
-    <span class="instrument-label">instrument</span>
-  </div>
-  <div class="instrument-row" id="instrumentRow"></div>
   <div class="kb-readout">
     <span class="name" id="rdName"></span>
     <span class="notes" id="rdNotes"></span>
@@ -1578,21 +1591,6 @@ function releaseHeldChord(){
 window.addEventListener('pointerup', releaseHeldChord);
 window.addEventListener('pointercancel', releaseHeldChord);
 
-// instrument switcher
-const instrumentRow = document.getElementById('instrumentRow');
-INSTRUMENTS.forEach(inst => {
-  const b = document.createElement('button');
-  b.className = 'inst-btn' + (inst.id === currentInstrument ? ' active' : '');
-  b.textContent = inst.name;
-  b.addEventListener('click', () => {
-    currentInstrument = inst.id;
-    setCookie('instrument', inst.id);
-    instrumentRow.querySelectorAll('.inst-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-  });
-  instrumentRow.appendChild(b);
-});
-
 // octave shifter — clamps to -2..+2 octaves, applied to whichever instrument is selected
 const OCTAVE_MIN = -2;
 const OCTAVE_MAX = 2;
@@ -1638,7 +1636,28 @@ octaveControl.appendChild(octaveLabel);
 octaveControl.appendChild(octDownBtn);
 octaveControl.appendChild(octValue);
 octaveControl.appendChild(octUpBtn);
-document.getElementById('keyOctaveRow').appendChild(octaveControl);
+
+const instrumentRow = document.getElementById('instrumentRow');
+instrumentRow.appendChild(octaveControl);
+
+const instrumentWordLabel = document.createElement('span');
+instrumentWordLabel.className = 'instrument-label instrument-word';
+instrumentWordLabel.textContent = 'instrument';
+instrumentRow.appendChild(instrumentWordLabel);
+
+// instrument switcher
+INSTRUMENTS.forEach(inst => {
+  const b = document.createElement('button');
+  b.className = 'inst-btn' + (inst.id === currentInstrument ? ' active' : '');
+  b.textContent = inst.name;
+  b.addEventListener('click', () => {
+    currentInstrument = inst.id;
+    setCookie('instrument', inst.id);
+    instrumentRow.querySelectorAll('.inst-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+  });
+  instrumentRow.appendChild(b);
+});
 
 // ---------- readout ----------
 const rdName = document.getElementById('rdName');
