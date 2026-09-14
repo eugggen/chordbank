@@ -271,11 +271,11 @@
     .card-head h2{ font-size: 21px; }
     .card-desc{ font-size: 14.5px; }
 
-    .instrument-word{ display: none; }
     .keyboard-panel{ padding: 10px 10px 14px; }
     .panel-row{ flex-direction: column; align-items: stretch; gap: 8px; }
-    .kb-readout{ padding: 0 14px; }
-    .instrument-row{ gap: 6px; }
+    .group-key-octave{ padding: 0 14px; }
+    .group-instrument{ margin-left: 0; padding: 0 14px; border-left: none; gap: 6px; }
+    .kb-readout{ margin: 0; padding: 0 14px; }
     .instrument-label{ font-size: 10px; }
     .key-select{ font-size: 11px; padding: 3px 6px; margin-right: 6px; }
     .inst-btn{ padding: 4px 8px; font-size: 10.5px; }
@@ -303,7 +303,7 @@
     z-index: 20;
   }
   .kb-readout{
-    margin: 0;
+    margin: 0 0 0 20px;
     display:flex;
     align-items: baseline;
     gap: 14px;
@@ -331,11 +331,18 @@
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 20px;
     flex-wrap: nowrap;
   }
-  .instrument-row{
-    margin: 0;
+  .group-key-octave{
+    display:flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .group-instrument{
+    margin-left: 8px;
+    padding-left: 12px;
+    border-left: 1px solid var(--line-soft);
     display:flex;
     align-items: center;
     gap: 8px;
@@ -349,11 +356,6 @@
     font-size: 11px;
     margin-right: 2px;
     flex-shrink: 0;
-  }
-  .instrument-word{
-    margin-left: 8px;
-    padding-left: 12px;
-    border-left: 1px solid var(--line-soft);
   }
   .key-select{
     background: var(--panel);
@@ -520,14 +522,14 @@
 
 <div class="keyboard-panel">
   <div class="panel-row">
-    <div class="instrument-row" id="instrumentRow">
+    <div class="group-key-octave" id="keyOctaveGroup">
       <span class="instrument-label">key</span>
       <select class="key-select" id="keySelect"></select>
     </div>
+    <div class="group-instrument" id="instrumentRow"></div>
     <div class="kb-readout">
       <span class="name" id="rdName"></span>
       <span class="notes" id="rdNotes"></span>
-      <span class="hint" id="rdDebug" style="display:none;"></span>
     </div>
   </div>
 </div>
@@ -1583,11 +1585,6 @@ function startChordHold(rootPc, intervals){
   }
   if(actx.state === 'suspended') actx.resume();
   const rootMidi = 60 + rootPc + (octaveOffset * 12);
-  const rootFreq = midiToFreq(rootMidi);
-  if(rdDebug){
-    rdDebug.style.display = 'inline';
-    rdDebug.textContent = 'ctx ' + actx.sampleRate + 'Hz \u00B7 root ' + rootFreq.toFixed(1) + 'Hz';
-  }
   const master = actx.createGain();
   master.gain.value = 0.75 / Math.max(intervals.length, 1);
   master.connect(getLimiterBus());
@@ -1654,15 +1651,10 @@ octaveControl.appendChild(octDownBtn);
 octaveControl.appendChild(octValue);
 octaveControl.appendChild(octUpBtn);
 
-const instrumentRow = document.getElementById('instrumentRow');
-instrumentRow.appendChild(octaveControl);
-
-const instrumentWordLabel = document.createElement('span');
-instrumentWordLabel.className = 'instrument-label instrument-word';
-instrumentWordLabel.textContent = 'instrument';
-instrumentRow.appendChild(instrumentWordLabel);
+document.getElementById('keyOctaveGroup').appendChild(octaveControl);
 
 // instrument switcher
+const instrumentRow = document.getElementById('instrumentRow');
 INSTRUMENTS.forEach(inst => {
   const b = document.createElement('button');
   b.className = 'inst-btn' + (inst.id === currentInstrument ? ' active' : '');
@@ -1679,7 +1671,6 @@ INSTRUMENTS.forEach(inst => {
 // ---------- readout ----------
 const rdName = document.getElementById('rdName');
 const rdNotes = document.getElementById('rdNotes');
-const rdDebug = document.getElementById('rdDebug');
 
 function clearReadout(){
   rdName.textContent = '';
