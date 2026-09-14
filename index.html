@@ -487,11 +487,14 @@
 </div>
 
 <div class="keyboard-panel">
-  <div class="instrument-row" id="instrumentRow">
+  <div class="instrument-row" id="keyOctaveRow">
     <span class="instrument-label">key</span>
     <select class="key-select" id="keySelect"></select>
-    <span class="instrument-label">preview instrument</span>
   </div>
+  <div class="instrument-row">
+    <span class="instrument-label">instrument</span>
+  </div>
+  <div class="instrument-row" id="instrumentRow"></div>
   <div class="kb-readout">
     <span class="name" id="rdName"></span>
     <span class="notes" id="rdNotes"></span>
@@ -1635,7 +1638,7 @@ octaveControl.appendChild(octaveLabel);
 octaveControl.appendChild(octDownBtn);
 octaveControl.appendChild(octValue);
 octaveControl.appendChild(octUpBtn);
-instrumentRow.appendChild(octaveControl);
+document.getElementById('keyOctaveRow').appendChild(octaveControl);
 
 // ---------- readout ----------
 const rdName = document.getElementById('rdName');
