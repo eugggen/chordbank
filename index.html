@@ -472,7 +472,7 @@
   <header>
     <div class="title-block">
       <h1>Chord Bank</h1>
-      <p>Sixty progressions worth stealing, for house, jazz, and everything between. Pick a key, hover a chord to see it on the keys, click to hear it.</p>
+      <p>Seventy-four progressions worth stealing, for house, jazz, and everything between. Pick a key, then click on the cards to hear the chords.</p>
     </div>
     <div class="keycount">current key<br><b id="currentKeyLabel">C</b></div>
   </header>
@@ -529,6 +529,10 @@ const QUALITIES = {
   add9:       { iv:[0,4,7,14],        suf:'add9' },
   maj6:       { iv:[0,4,7,9],         suf:'6' },
   min6:       { iv:[0,3,7,9],         suf:'m6' },
+  minMaj7:    { iv:[0,3,7,11],        suf:'m(maj7)' },
+  sus4:       { iv:[0,5,7],           suf:'sus4' },
+  dom7b9:     { iv:[0,4,7,10,13],     suf:'7♭9' },
+  min11:      { iv:[0,3,7,10,14,17],  suf:'m11' },
 };
 
 const PROGRESSIONS = [
@@ -1102,6 +1106,134 @@ const PROGRESSIONS = [
       { roman:'V7sus', offset:7, q:'dom7sus' },
     ],
     desc: "Stacked ninths built for a pitched vocal chop — vi to IV to I to a suspended V, the exact four chords behind a hundred festival drops."
+  },
+  {
+    name: "Chromatic Descent", tags: ["Electro","Cinematic"], mood: 'Dark', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'i(maj7)', offset:0, q:'minMaj7' },
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'i6', offset:0, q:'min6' },
+    ],
+    desc: "The Bond-theme move — one root, one chord shape sliding through minor, minor-major7, minor7, and minor6. Electro producers have been stealing this trick for decades."
+  },
+  {
+    name: "Vector Grid", tags: ["Electro","Dark"], mood: 'Dark', accent: 'var(--amber-dim)',
+    chords: [
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'♭VII9', offset:10, q:'dom9' },
+      { roman:'iv7', offset:5, q:'min7' },
+      { roman:'♭VImaj7', offset:8, q:'maj7' },
+    ],
+    desc: "A rolling minor-seventh loop that never quite resolves — built for a hard-panned arpeggiator and a sidechained sub."
+  },
+  {
+    name: "Static Pulse", tags: ["Electro","Minimal Wave"], mood: 'Tense', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'♭IImaj7', offset:1, q:'maj7' },
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'♭IImaj7', offset:1, q:'maj7' },
+    ],
+    desc: "A half-step drone straight out of early minimal wave — two chords, maximum unease, built for a gated drum machine."
+  },
+  {
+    name: "Fog Bank", tags: ["Cloud Rap","Ambient"], mood: 'Dark', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'i11', offset:0, q:'min11' },
+      { roman:'iv9', offset:5, q:'min9' },
+    ],
+    desc: "Two lush, unresolved minor extensions — the hazy, pitched-vocal-chop backdrop cloud rap runs on. Let it just sit there."
+  },
+  {
+    name: "Melting Tape", tags: ["Cloud Rap","Trap"], mood: 'Dark', accent: 'var(--amber-dim)',
+    chords: [
+      { roman:'i9', offset:0, q:'min9' },
+      { roman:'iv11', offset:5, q:'min11' },
+      { roman:'♭VImaj7', offset:8, q:'maj7' },
+      { roman:'♭VII7♭9', offset:10, q:'dom7b9' },
+    ],
+    desc: "A slow descent into an altered dominant — the flat-nine on the last chord is the bruise this whole progression is built around."
+  },
+  {
+    name: "Xanax Sky", tags: ["Cloud Rap","Dark"], mood: 'Dark', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'i(maj7)', offset:0, q:'minMaj7' },
+      { roman:'iv7', offset:5, q:'min7' },
+      { roman:'i(maj7)', offset:0, q:'minMaj7' },
+      { roman:'iv7', offset:5, q:'min7' },
+    ],
+    desc: "A two-chord loop built around the minor-major seventh — woozy, slightly wrong-sounding in the best way, and built to repeat for a full verse."
+  },
+  {
+    name: "Basement Glow", tags: ["Deep House"], mood: 'Dark', accent: 'var(--amber-dim)',
+    chords: [
+      { roman:'i9', offset:0, q:'min9' },
+      { roman:'iv9', offset:5, q:'min9' },
+      { roman:'♭VII9', offset:10, q:'dom9' },
+      { roman:'♭IIImaj7', offset:3, q:'maj7' },
+    ],
+    desc: "The classic deep house descent — minor ninths falling through a dominant into a major-seventh landing pad. Built for 4am."
+  },
+  {
+    name: "Late Return", tags: ["Deep House","Dreamy"], mood: 'Mysterious', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'i11', offset:0, q:'min11' },
+      { roman:'♭VImaj9', offset:8, q:'maj9' },
+    ],
+    desc: "Just two chords, both heavily extended — spacious enough to build an entire deep house track's harmonic world around."
+  },
+  {
+    name: "Concrete Bloom", tags: ["Deep House","Jazz-Influenced"], mood: 'Dark', accent: 'var(--amber-dim)',
+    chords: [
+      { roman:'ii\u00F87', offset:2, q:'m7b5' },
+      { roman:'V7♭9', offset:7, q:'dom7b9' },
+      { roman:'i(maj7)', offset:0, q:'minMaj7' },
+      { roman:'i9', offset:0, q:'min9' },
+    ],
+    desc: "A minor ii–V smuggled into house music, resolving onto a minor-major seventh instead of a clean minor triad — the tension never fully lets go."
+  },
+  {
+    name: "Grey Room", tags: ["Tech House","Minimal"], mood: 'Tense', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'ivsus4', offset:5, q:'sus4' },
+    ],
+    desc: "A minor seventh answered by a suspended fourth that never resolves — the two-chord skeleton under a lot of tech house's percussion-first tracks."
+  },
+  {
+    name: "Low Ceiling", tags: ["Tech House","Deep"], mood: 'Dark', accent: 'var(--amber-dim)',
+    chords: [
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'♭VII7', offset:10, q:'dom7' },
+    ],
+    desc: "One chord, one neighbor, repeated for eight bars at a time — tech house at its most stripped-down, built entirely around groove."
+  },
+  {
+    name: "Static Line", tags: ["Tech House","Hypnotic"], mood: 'Tense', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'isus4', offset:0, q:'sus4' },
+      { roman:'i7', offset:0, q:'min7' },
+    ],
+    desc: "A suspension that keeps almost resolving into the minor seventh below it — the loop stays on edge no matter how many times it repeats."
+  },
+  {
+    name: "Sub Level", tags: ["Dark Techno","Industrial"], mood: 'Dark', accent: 'var(--amber-dim)',
+    chords: [
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'♭II7', offset:1, q:'dom7' },
+    ],
+    desc: "A minor seventh slammed against its neighbor a half-step up — dissonant, mechanical, and built for a room with too much reverb."
+  },
+  {
+    name: "Vapor Trail", tags: ["Cloud Rap","Ambient Trap"], mood: 'Dark', accent: 'var(--teal-dim)',
+    chords: [
+      { roman:'i(maj7)', offset:0, q:'minMaj7' },
+      { roman:'♭VImaj7', offset:8, q:'maj7' },
+      { roman:'iv9', offset:5, q:'min9' },
+      { roman:'i(maj7)', offset:0, q:'minMaj7' },
+    ],
+    desc: "The minor-major seventh returns to bookend a moody four-chord loop — the kind of harmonic ambiguity that makes a hook feel like it's dissolving."
   },
 ];
 
