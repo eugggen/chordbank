@@ -536,14 +536,19 @@
 
 <script>
 // ---------- settings persistence (cookies) ----------
-function setCookie(name, value){
-  const d = new Date();
-  d.setTime(d.getTime() + 365 * 24 * 60 * 60 * 1000);
-  document.cookie = 'chordbank_' + name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
+function saveSetting(name, value){
+  try{
+    localStorage.setItem('chordbank_' + name, value);
+  }catch(e){
+    // storage unavailable (private browsing, disabled, etc.) — settings just won't persist
+  }
 }
-function getCookie(name){
-  const match = document.cookie.match(new RegExp('(?:^|; )chordbank_' + name + '=([^;]*)'));
-  return match ? decodeURIComponent(match[1]) : null;
+function loadSetting(name){
+  try{
+    return localStorage.getItem('chordbank_' + name);
+  }catch(e){
+    return null;
+  }
 }
 
 const NOTE_NAMES = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
@@ -1272,8 +1277,8 @@ const PROGRESSIONS = [
   },
 ];
 
-const savedKey = parseInt(getCookie('key'), 10);
-const savedMode = getCookie('mode') === 'style' ? 'style' : 'mood';
+const savedKey = parseInt(loadSetting('key'), 10);
+const savedMode = loadSetting('mode') === 'style' ? 'style' : 'mood';
 let state = { key: (Number.isInteger(savedKey) && savedKey >= 0 && savedKey <= 11) ? savedKey : 0, mode: savedMode, tag: 'All', locked: null };
 document.getElementById('currentKeyLabel').textContent = NOTE_NAMES[state.key];
 
@@ -1302,7 +1307,7 @@ function setKey(i){
   document.getElementById('currentKeyLabel').textContent = NOTE_NAMES[i];
   [...keyRow.children].forEach((c, ci) => c.classList.toggle('active', ci === i));
   keySelect.value = i;
-  setCookie('key', i);
+  saveSetting('key', i);
   renderGrid();
   clearReadout();
 }
@@ -1312,7 +1317,7 @@ const STYLE_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.flatMap(p => p.tag
 const MOOD_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.map(p => p.mood)))];
 
 // now that both tag lists exist, validate the saved tag against whichever list is active
-const savedTag = getCookie('tag');
+const savedTag = loadSetting('tag');
 const activeTagList = state.mode === 'style' ? STYLE_TAGS : MOOD_TAGS;
 state.tag = (savedTag && activeTagList.includes(savedTag)) ? savedTag : 'All';
 
@@ -1332,8 +1337,8 @@ MODES.forEach(m => {
     if(state.mode === m.id) return;
     state.mode = m.id;
     state.tag = 'All';
-    setCookie('mode', m.id);
-    setCookie('tag', 'All');
+    saveSetting('mode', m.id);
+    saveSetting('tag', 'All');
     modeSwitch.querySelectorAll('.mode-btn').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
     renderTagRow();
@@ -1343,7 +1348,7 @@ MODES.forEach(m => {
 });
 
 function renderTagRow(){
-  tagRow.innerHTML = '';
+  tagRow.replaceChildren();
   const isMoodMode = state.mode === 'mood';
   const tags = isMoodMode ? MOOD_TAGS : STYLE_TAGS;
   tagRow.classList.toggle('tag-row-grid', isMoodMode);
@@ -1354,7 +1359,7 @@ function renderTagRow(){
     b.textContent = t;
     b.addEventListener('click', () => {
       state.tag = t;
-      setCookie('tag', t);
+      saveSetting('tag', t);
       [...tagRow.children].forEach(c => c.classList.toggle('active', c.textContent===t));
       renderGrid();
     });
@@ -1447,7 +1452,7 @@ const INSTRUMENTS = [
   { id:'organ',  name:'Organ' },
   { id:'bass',   name:'Bass' },
 ];
-const savedInstrument = getCookie('instrument');
+const savedInstrument = loadSetting('instrument');
 let currentInstrument = INSTRUMENTS.some(i => i.id === savedInstrument) ? savedInstrument : 'piano';
 
 // attack/decay/sustain/release per instrument, in seconds (sustain is a 0-1 gain level)
@@ -1608,7 +1613,7 @@ window.addEventListener('pointercancel', releaseHeldChord);
 // octave shifter — clamps to -2..+2 octaves, applied to whichever instrument is selected
 const OCTAVE_MIN = -2;
 const OCTAVE_MAX = 2;
-const savedOctave = parseInt(getCookie('octave'), 10);
+const savedOctave = parseInt(loadSetting('octave'), 10);
 let octaveOffset = (Number.isInteger(savedOctave) && savedOctave >= OCTAVE_MIN && savedOctave <= OCTAVE_MAX) ? savedOctave : 0;
 
 const octaveControl = document.createElement('div');
@@ -1636,12 +1641,12 @@ function updateOctaveDisplay(){
 }
 octDownBtn.addEventListener('click', () => {
   octaveOffset = Math.max(OCTAVE_MIN, octaveOffset - 1);
-  setCookie('octave', octaveOffset);
+  saveSetting('octave', octaveOffset);
   updateOctaveDisplay();
 });
 octUpBtn.addEventListener('click', () => {
   octaveOffset = Math.min(OCTAVE_MAX, octaveOffset + 1);
-  setCookie('octave', octaveOffset);
+  saveSetting('octave', octaveOffset);
   updateOctaveDisplay();
 });
 updateOctaveDisplay();
@@ -1661,7 +1666,7 @@ INSTRUMENTS.forEach(inst => {
   b.textContent = inst.name;
   b.addEventListener('click', () => {
     currentInstrument = inst.id;
-    setCookie('instrument', inst.id);
+    saveSetting('instrument', inst.id);
     instrumentRow.querySelectorAll('.inst-btn').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
   });
@@ -1695,7 +1700,7 @@ function chordInfo(key, chord){
 }
 
 function renderGrid(){
-  grid.innerHTML = '';
+  grid.replaceChildren();
   const filtered = PROGRESSIONS.filter(p => {
     if(state.tag === 'All') return true;
     return state.mode === 'style' ? p.tags.includes(state.tag) : p.mood === state.tag;
