@@ -666,11 +666,12 @@ const FLIP_MAP = {
 
 // semitone transposition options shown per card
 const TRANSPOSE_STEPS = [
-  { label:'+1',  steps: 1 },
-  { label:'+3',  steps: 3 },
-  { label:'+6',  steps: 6 },
-  { label:'+7',  steps: 7 },
+  { label:'+1',  steps:  1 },
+  { label:'+3',  steps:  3 },
+  { label:'+6',  steps:  6 },
+  { label:'+7',  steps:  7 },
   { label:'−3',  steps: -3 },
+  { label:'−5',  steps: -5 },
   { label:'−7',  steps: -7 },
   { label:'flip', steps: 'flip' },
 ];
@@ -1801,6 +1802,35 @@ function chordInfo(key, chord, localTranspose, localFlip){
   return { rootPc, quality, tonePcsAll, uniqueTones };
 }
 
+function toSlug(name){
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function scrollToSlug(slug){
+  const el = document.getElementById('prog-' + slug);
+  if(el){
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    el.classList.add('card-flash');
+    setTimeout(() => el.classList.remove('card-flash'), 900);
+  }
+}
+
+window.addEventListener('hashchange', () => {
+  const slug = location.hash.slice(1);
+  if(!slug) return;
+  // if target isn't rendered (filtered out), reset tag first
+  const target = PROGRESSIONS.find(p => toSlug(p.name) === slug);
+  if(target){
+    const visible = filtered.some(p => p.name === target.name);
+    if(!visible){
+      state.tag = 'All';
+      renderTagRow();
+      renderGrid();
+    }
+  }
+  requestAnimationFrame(() => scrollToSlug(slug));
+});
+
 let filtered = [];
 function renderGrid(){
   grid.replaceChildren();
@@ -1811,6 +1841,7 @@ function renderGrid(){
   filtered.forEach(prog => {
     const card = document.createElement('div');
     card.className = 'card';
+    card.id = 'prog-' + toSlug(prog.name);
 
     // per-card local transposition state
     let localTranspose = 0; // semitone offset
@@ -1944,23 +1975,19 @@ function renderGrid(){
       btn.className = 'next-btn';
       btn.textContent = targetName;
       btn.addEventListener('click', () => {
+        const slug = toSlug(targetName);
         const visible = filtered.some(p => p.name === targetName);
         if(!visible){
           state.tag = 'All';
           renderTagRow();
           renderGrid();
         }
-        requestAnimationFrame(() => {
-          const targetCard = [...document.querySelectorAll('.card')].find(c => {
-            const h2 = c.querySelector('h2');
-            return h2 && h2.textContent === targetName;
-          });
-          if(targetCard){
-            targetCard.scrollIntoView({ behavior:'smooth', block:'center' });
-            targetCard.classList.add('card-flash');
-            setTimeout(() => targetCard.classList.remove('card-flash'), 900);
-          }
-        });
+        // push hash — triggers hashchange which does the scroll
+        location.hash = slug;
+        // if hash was already set to the same value (no hashchange fires), scroll manually
+        if(location.hash === '#' + slug){
+          requestAnimationFrame(() => scrollToSlug(slug));
+        }
       });
       nextRow.appendChild(btn);
     });
@@ -1976,6 +2003,15 @@ function renderGrid(){
 
 renderGrid();
 clearReadout();
+if(location.hash){
+  const slug = location.hash.slice(1);
+  const target = PROGRESSIONS.find(p => toSlug(p.name) === slug);
+  if(target){
+    const visible = filtered.some(p => p.name === target.name);
+    if(!visible){ state.tag = 'All'; renderTagRow(); renderGrid(); }
+  }
+  requestAnimationFrame(() => scrollToSlug(slug));
+}
 </script>
 
 </body>
