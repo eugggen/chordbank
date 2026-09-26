@@ -2260,7 +2260,189 @@ const PROGRESSIONS = [
       { roman:'V7♭9', offset:7, q:'dom7b9' }
     ],
     desc: "Minor sixth tonic into a VI7 — lounge darkness with a jazz cadence at the end."
+  },
+  {
+    name: "Phrygian Grip", tags: ["Rage Trap","Hyperpop"], mood: 'Dark', next: ['Static Pulse', 'Grime Stab'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭II', offset:1, q:'maj' },
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "The ♭II oscillation — two chords a half-step apart, never resolving, the harmonic engine of half the Whole Lotta Red beats."
+  },
+  {
+    name: "Half Step Abyss", tags: ["Rage Trap","Hyperpop"], mood: 'Tense', next: ['Phrygian Grip', 'Chromatic Descent'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭II', offset:1, q:'maj' },
+      { roman:'♭V', offset:6, q:'maj' }
+    ],
+    desc: "Root → half-step up → tritone away. Three chords with no common tones between the last two — about as destabilised as harmony gets before it stops being a progression."
+  },
+  {
+    name: "Neon Casket", tags: ["Rage Trap","Dark"], mood: 'Dark', next: ['Phrygian Grip', 'Cold Wave Static'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭VI', offset:8, q:'maj' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "The minor tonic drops to a ♭VI before slamming into the ♭II — a slow collapse with a Phrygian gut-punch at the end."
+  },
+  {
+    name: "Glitch Shrine", tags: ["Rage Trap","Hyperpop","Chromatic"], mood: 'Tense', next: ['Half Step Abyss', 'Static Pulse'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'♭VII', offset:10, q:'maj' },
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "Starts a whole step above the tonic, falls into it, then immediately overshoots by a half-step. The motion feels wrong and right at the same time — exactly the point."
+  },
+  {
+    name: "Chrome Wound", tags: ["Rage Trap","Industrial Trap"], mood: 'Dark', next: ['Neon Casket', 'Sub Level'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min7' },
+      { roman:'♭V', offset:6, q:'min7' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "Minor seventh into its tritone mirror, then the Phrygian slap. The two min7 chords share no notes — pure dissonance dressed in extended harmony."
+  },
+  {
+    name: "Distortion Field", tags: ["Rage Trap","Hyperpop"], mood: 'Tense', next: ['Glitch Shrine', 'Vector Grid'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭II', offset:1, q:'maj' },
+      { roman:'♭III', offset:3, q:'maj' }
+    ],
+    desc: "Crawls up by half-step then jumps a whole step — three chromatic-zone chords that feel like a broken chord wheel. Works especially well with a pitched-up vocal sample."
+  },
+  {
+    name: "Void Carousel", tags: ["Rage Trap","Ambient Trap"], mood: 'Dark', next: ['Neon Casket', 'Vapor Trail'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭V', offset:6, q:'maj' },
+      { roman:'♭VI', offset:8, q:'maj' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "Four chords — root, tritone, up a whole step, back to ♭II — a slow rotation through the most unstable intervals in the chromatic scale. Loop it for eight bars."
+  },
+  {
+    name: "Static Cathedral", tags: ["Rage Trap","Hyperpop"], mood: 'Mysterious', next: ['Xanax Sky', 'Chrome Wound'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'imaj7', offset:0, q:'minMaj7' },
+      { roman:'♭IImaj7', offset:1, q:'maj7' }
+    ],
+    desc: "The woozy minor-major seventh met by its half-step neighbor also voiced as a maj7 — two clashing color chords that cancel each other out into something genuinely strange."
+  },
+  {
+    name: "Red Zone", tags: ["Rage Trap","Hyperpop"], mood: 'Tense', next: ['Phrygian Grip', 'Glitch Shrine'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'♭II', offset:1, q:'maj' },
+      { roman:'♭VII', offset:10, q:'maj' },
+      { roman:'i', offset:0, q:'min' }
+    ],
+    desc: "Opens on the ♭II — immediately wrong — falls a minor second to the ♭VII, then resolves but barely. Ken Carson's bread and butter."
+  },
+  {
+    name: "Broken Signal", tags: ["Rage Trap","Chromatic"], mood: 'Dark', next: ['Chrome Wound', 'Sub Level'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i7', offset:0, q:'min7' },
+      { roman:'♭V7', offset:6, q:'dom7' }
+    ],
+    desc: "Minor seventh and its tritone dominant — the most dissonant two-chord relationship in tonal harmony. Let the 808 fill in everything the chords leave empty."
+  },
+  {
+    name: "Afterlife Mall", tags: ["Rage Trap","Hyperpop"], mood: 'Mysterious', next: ['Distortion Field', 'Glitch Shrine'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'III', offset:4, q:'maj' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "The major III is surprisingly common in rage — it brightens the loop just enough before the ♭II kills the mood again. Something disorienting about a major chord feeling like the darkest note in the progression."
+  },
+  {
+    name: "Spiked Air", tags: ["Rage Trap","Industrial Trap"], mood: 'Tense', next: ['Half Step Abyss', 'Broken Signal'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'♭II', offset:1, q:'maj' },
+      { roman:'♭V', offset:6, q:'maj' }
+    ],
+    desc: "Just two chords, both borrowed, a tritone apart — no tonic at all. The most unmoored loop in this collection. Works because the production holds it together, not the harmony."
+  },
+  {
+    name: "Pale Violence", tags: ["Rage Trap","Dark"], mood: 'Dark', next: ['Neon Casket', 'Void Carousel'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'vi', offset:9, q:'min' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "A deceptively familiar i–vi before the ♭II destroys any resolution you were expecting. The first two chords feel like a ballad setup; the third chord pulls the rug."
+  },
+  {
+    name: "Signal Rot", tags: ["Rage Trap","Ambient Trap"], mood: 'Dark', next: ['Void Carousel', 'Distortion Field'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭III', offset:3, q:'maj' },
+      { roman:'♭V', offset:6, q:'maj' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "A symmetrical ascent (minor 3rd, augmented 4th) that should sound resolved but doesn't — the ♭II at the end makes the whole loop feel like it's falling backwards."
+  },
+  {
+    name: "Angel Dust", tags: ["Rage Trap","Hyperpop"], mood: 'Mysterious', next: ['Static Cathedral', 'Xanax Sky'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'imaj7', offset:0, q:'minMaj7' },
+      { roman:'♭II', offset:1, q:'maj' },
+      { roman:'i', offset:0, q:'min' }
+    ],
+    desc: "The minor-major seventh resolves down to a plain ♭II and back to the bare minor — like hearing the same chord get progressively stripped of color. Eerie and very loopable."
+  },
+  {
+    name: "Drift Protocol", tags: ["Rage Trap","Cloud Rap"], mood: 'Dark', next: ['Melting Tape', 'Angel Dust'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭VII', offset:10, q:'maj' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "Standard minor loop derailed by the ♭II at the end — the first two chords feel like cloud rap, the last one is pure rage. A useful bridge between the two aesthetics."
+  },
+  {
+    name: "Trauma Core", tags: ["Rage Trap","Hyperpop"], mood: 'Tense', next: ['Broken Signal', 'Red Zone'], accent: 'var(--teal-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭V', offset:6, q:'min' },
+      { roman:'i', offset:0, q:'min' },
+      { roman:'♭II', offset:1, q:'maj' }
+    ],
+    desc: "The tritone mirror of i framed by two i chords before the ♭II lands — the middle section feels like a glitch, the ♭II feels like the correction that makes things worse."
+  },
+  {
+    name: "Null Space", tags: ["Rage Trap","Industrial Trap"], mood: 'Dark', next: ['Chrome Wound', 'Spiked Air'], accent: 'var(--amber-dim)',
+    harmony: 'borrowed',
+    chords: [
+      { roman:'♭II', offset:1, q:'min7' },
+      { roman:'III', offset:4, q:'min7' },
+      { roman:'♭V', offset:6, q:'min7' }
+    ],
+    desc: "Three minor sevenths ascending by major thirds — an augmented triad dressed in minor sevenths. No tonic at all. Symmetrical, unresolved, and deeply wrong in all the right ways."
   }
+
 ];
 
 const savedKey = parseInt(loadSetting('key'), 10);
