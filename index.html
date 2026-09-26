@@ -587,7 +587,7 @@
   <header>
     <div class="title-block">
       <h1>Chord Bank</h1>
-      <p>A hundred and forty-eight progressions worth stealing, for house, jazz, and everything between. Pick a key, then click on the cards to hear the chords.</p>
+      <p>A hundred and sixty-six progressions worth stealing, for house, jazz, rage, and everything between. Pick a key, then click on the cards to hear the chords.</p>
     </div>
     <div class="keycount">current key<br><b id="currentKeyLabel">C</b></div>
   </header>
@@ -2260,7 +2260,7 @@ const PROGRESSIONS = [
       { roman:'V7♭9', offset:7, q:'dom7b9' }
     ],
     desc: "Minor sixth tonic into a VI7 — lounge darkness with a jazz cadence at the end."
-  },
+  },
   {
     name: "Phrygian Grip", tags: ["Rage Trap","Hyperpop"], mood: 'Dark', next: ['Static Pulse', 'Grime Stab'], accent: 'var(--teal-dim)',
     harmony: 'borrowed',
@@ -2483,7 +2483,7 @@ function setKey(i){
 }
 
 // ---------- mode switch (styles vs moods) + tag row ----------
-const STYLE_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.flatMap(p => p.tags)))];
+const STYLE_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.flatMap(p => p.tags))).sort((a, b) => a.localeCompare(b))];
 const MOOD_TAGS = ['All', ...Array.from(new Set(PROGRESSIONS.map(p => p.mood)))];
 
 // now that both tag lists exist, validate the saved tag against whichever list is active
