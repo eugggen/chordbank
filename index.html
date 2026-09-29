@@ -328,6 +328,15 @@
     color: var(--teal);
     border-color: var(--teal-dim);
   }
+  .midi-btn{
+    margin-left: auto;
+    border-color: var(--muted-2);
+    color: var(--ink);
+  }
+  .midi-btn:hover{
+    color: var(--amber);
+    border-color: var(--amber);
+  }
 
   .transform-row{
     display: flex;
@@ -2901,6 +2910,86 @@ function toSlug(name){
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+const MIDI_PPQ = 480;
+const MIDI_BAR_TICKS = MIDI_PPQ * 4;
+const MIDI_FILE_KEYS = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+function writeVarLen(value){
+  let buffer = value & 0x7f;
+  const bytes = [];
+  while((value >>= 7)){
+    buffer <<= 8;
+    buffer |= ((value & 0x7f) | 0x80);
+  }
+  while(true){
+    bytes.push(buffer & 0xff);
+    if(buffer & 0x80) buffer >>= 8;
+    else break;
+  }
+  return bytes;
+}
+
+function buildProgressionMidi(prog, key, localTranspose, localFlip){
+  const events = [];
+  function add(tick, bytes){ events.push({ tick, bytes }); }
+
+  add(0, [0xFF, 0x51, 0x03, 0x07, 0xA1, 0x20]);
+  add(0, [0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08]);
+  const nameBytes = Array.from(new TextEncoder().encode(prog.name)).slice(0, 127);
+  add(0, [0xFF, 0x03, nameBytes.length].concat(nameBytes));
+
+  prog.chords.forEach((chord, i) => {
+    const info = chordInfo(key, chord, localTranspose, localFlip);
+    const rootMidi = 60 + info.rootPc + (octaveOffset * 12);
+    const notes = Array.from(new Set(info.quality.iv.map(iv => Math.max(0, Math.min(127, rootMidi + iv)))));
+    const start = i * MIDI_BAR_TICKS;
+    notes.forEach(note => {
+      add(start, [0x90, note, 90]);
+      add(start + MIDI_BAR_TICKS, [0x80, note, 0]);
+    });
+  });
+
+  events.sort((a, b) => a.tick - b.tick);
+
+  const track = [];
+  let last = 0;
+  events.forEach(ev => {
+    writeVarLen(ev.tick - last).forEach(b => track.push(b));
+    ev.bytes.forEach(b => track.push(b));
+    last = ev.tick;
+  });
+  writeVarLen(0).forEach(b => track.push(b));
+  track.push(0xFF, 0x2F, 0x00);
+
+  const len = track.length;
+  const bytes = [
+    0x4D, 0x54, 0x68, 0x64,
+    0x00, 0x00, 0x00, 0x06,
+    0x00, 0x00,
+    0x00, 0x01,
+    (MIDI_PPQ >> 8) & 0xff, MIDI_PPQ & 0xff,
+    0x4D, 0x54, 0x72, 0x6B,
+    (len >>> 24) & 0xff, (len >>> 16) & 0xff, (len >>> 8) & 0xff, len & 0xff
+  ].concat(track);
+  return new Uint8Array(bytes);
+}
+
+function midiFilename(prog){
+  return toSlug(prog.name) + '-' + MIDI_FILE_KEYS[state.key].toLowerCase() + '.mid';
+}
+
+function downloadMidi(bytes, filename){
+  const blob = new Blob([bytes], { type: 'audio/midi' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
 function scrollToSlug(slug){
   const el = document.getElementById('prog-' + slug);
   if(el){
@@ -3095,6 +3184,37 @@ function renderGrid(){
       });
       nextRow.appendChild(btn);
     });
+
+    const midiBtn = document.createElement('button');
+    midiBtn.className = 'next-btn midi-btn';
+    midiBtn.type = 'button';
+    midiBtn.textContent = 'midi';
+    midiBtn.title = 'Download MIDI. Drag onto the desktop or a folder, then into Ableton — Live will not take a MIDI file straight from the browser.';
+    midiBtn.draggable = true;
+    function currentMidiFile(){
+      const bytes = buildProgressionMidi(prog, state.key, localTranspose, localFlip);
+      const filename = midiFilename(prog);
+      return { bytes, filename };
+    }
+    // A generated File() that is not an image is dragged as plain text, which
+    // Ableton ignores. DownloadURL is what Chrome saves as a real .mid on drop.
+    function midiDownloadUrl(bytes, filename){
+      let binary = '';
+      for(let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      return 'audio/midi:' + filename + ':data:audio/midi;base64,' + btoa(binary);
+    }
+    midiBtn.addEventListener('click', () => {
+      const { bytes, filename } = currentMidiFile();
+      downloadMidi(bytes, filename);
+    });
+    midiBtn.addEventListener('dragstart', (e) => {
+      const { bytes, filename } = currentMidiFile();
+      const payload = midiDownloadUrl(bytes, filename);
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.clearData();
+      e.dataTransfer.setData('DownloadURL', payload);
+    });
+    nextRow.appendChild(midiBtn);
 
     card.appendChild(head);
     card.appendChild(chipRow);
